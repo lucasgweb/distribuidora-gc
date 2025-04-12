@@ -9,8 +9,8 @@ import { toast } from "sonner"
 
 export function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("eduardo@test.com");
+    const [password, setPassword] = useState("contraseña123");
     const { login } = useAuth();
     const navigate = useNavigate();
 
