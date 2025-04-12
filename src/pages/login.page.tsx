@@ -3,6 +3,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import LogoIcon from "../assets/logo-icon.png";
 import { Eye, EyeClosed } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -45,9 +46,11 @@ export function LoginPage() {
                         ¿Olvidaste tu contraseña?
                     </a>
                 </div>
-                <Button className="w-full" type="submit">
-                    Iniciar sesión
-                </Button>
+                <Link to="/home">
+                    <Button className="w-full" type="submit">
+                        Iniciar sesión
+                    </Button>
+                </Link>
                 <Button className="w-full mt-6 text-gray-900" variant="link" type="button">
                     Crear nueva cuenta
                 </Button>
