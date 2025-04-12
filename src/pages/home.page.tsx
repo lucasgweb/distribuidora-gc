@@ -3,8 +3,11 @@ import { BottomNav } from "../components/bottom-nav";
 import { ChartFake } from "../components/chart-fake";
 import { Header } from "../components/header";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../components/ui/card";
+import { useHome } from "../hooks/use-home.hook";
 
 export function HomePage() {
+
+    const { user } = useHome();
 
     const salesData = {
         amount: "2,450",
@@ -73,6 +76,7 @@ export function HomePage() {
                     {/* Mobile Header */}
                     <div className="md:hidden">
 
+                        <h2 className="text-2xl font-bold mt-4">Hola {user!.name.split(" ")[0]} 👋</h2>
                         <p className="text-gray-500">Bienvenido a tu panel de control</p>
 
                         <div className="grid grid-cols-2 gap-4 mt-4">

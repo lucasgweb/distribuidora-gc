@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Menu } from "lucide-react"
 
 type Props = {
     title: string
@@ -16,7 +16,7 @@ export function Header({ title, onBack }: Props) {
                 </button>
             ) : (
                 <button className="flex font-bold items-center text-gray-800 hover:text-gray-800" onClick={onBack}>
-                    <span className="text-2xl ">{title}</span>
+                    <Menu className="w-5 h-5" />
                 </button>
             )}
 

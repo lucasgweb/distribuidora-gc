@@ -3,10 +3,27 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import LogoIcon from "../assets/logo-icon.png";
 import { Eye, EyeClosed } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/use-auth.hook";
+import { toast } from "sonner"
 
 export function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const { login } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await login(email, password);
+            navigate("/home");
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_err) {
+            toast.error("Error al iniciar sesión, verifica tus credenciales")
+        }
+    };
 
     return (
         <div className="flex items-center flex-col justify-center h-screen px-8 bg-gray-100 relative overflow-hidden">
@@ -18,9 +35,17 @@ export function LoginPage() {
                 ¡Bienvenido de nuevo,<br />
                 te hemos extrañado!
             </p>
-            <form className="w-full mt-4 z-10 max-w-md" action="/login" method="POST">
+            <form className="w-full mt-4 z-10 max-w-md" onSubmit={handleSubmit}>
                 <div className="mb-4 w-full">
-                    <Input type="text" className="w-full" id="username" placeholder="Correo electrónico" />
+                    <Input
+                        type="email"
+                        className="w-full"
+                        id="email"
+                        placeholder="Correo electrónico"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
                 </div>
                 <div className="mb-4 relative">
                     <Input
@@ -28,6 +53,9 @@ export function LoginPage() {
                         className="w-full pr-10"
                         id="password"
                         placeholder="Contraseña"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
                     />
                     <button
                         type="button"
@@ -46,11 +74,9 @@ export function LoginPage() {
                         ¿Olvidaste tu contraseña?
                     </a>
                 </div>
-                <Link to="/home">
-                    <Button className="w-full" type="submit">
-                        Iniciar sesión
-                    </Button>
-                </Link>
+                <Button className="w-full" type="submit">
+                    Iniciar sesión
+                </Button>
                 <Button className="w-full mt-6 text-gray-900" variant="link" type="button">
                     Crear nueva cuenta
                 </Button>
