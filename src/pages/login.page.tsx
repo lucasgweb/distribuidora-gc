@@ -9,7 +9,7 @@ export function LoginPage() {
 
     return (
         <div className="flex items-center flex-col justify-center h-screen px-8 bg-gray-100 relative overflow-hidden">
-            <div className="absolute -right-[150px] -top-[200px] w-[520px] h-[520px] rounded-full bg-primary/5" />
+            <div className="fixed -right-[70%] -top-[37%] w-[80vh] h-[80vh] rounded-full bg-primary/5 z-0" />
 
             <img src={LogoIcon} alt="Logo" className="w-20 h-20 mx-auto mb-4 z-10" />
             <h1 className="text-3xl font-bold mb-4 text-primary z-10">Iniciar sesión</h1>
@@ -17,7 +17,7 @@ export function LoginPage() {
                 ¡Bienvenido de nuevo,<br />
                 te hemos extrañado!
             </p>
-            <form className="w-full mt-4 z-10" action="/login" method="POST">
+            <form className="w-full mt-4 z-10 max-w-md" action="/login" method="POST">
                 <div className="mb-4 w-full">
                     <Input type="text" className="w-full" id="username" placeholder="Correo electrónico" />
                 </div>
