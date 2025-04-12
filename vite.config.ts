@@ -13,9 +13,9 @@ export default defineConfig({
         registerType: 'autoUpdate',
         includeAssets: ['apple-touch-icon.png'],
         manifest: {
-          name: 'Distribuidora GC',
-          short_name: 'Distribuidora GC',
-          description: 'Distribuidora GC',
+          name: 'Distribuidora G&C',
+          short_name: 'Distribuidora G&C',
+          description: 'Distribuidora G&C',
           theme_color: '#ffffff',
           start_url: '/',
           icons: [
