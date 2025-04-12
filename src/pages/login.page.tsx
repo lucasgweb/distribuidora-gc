@@ -18,7 +18,7 @@ export function LoginPage() {
         e.preventDefault();
         try {
             await login(email, password);
-            navigate("/home");
+            navigate("/");
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_err) {
             toast.error("Error al iniciar sesión, verifica tus credenciales")
