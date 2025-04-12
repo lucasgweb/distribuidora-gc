@@ -40,7 +40,7 @@ export function LoginPage() {
                         )}
                     </button>
                 </div>
-                <div className="flex items-center justify-end mb-4">
+                <div className="flex items-center justify-end my-8">
                     <a href="#" className="text-sm text-primary font-medium hover:underline">
                         ¿Olvidaste tu contraseña?
                     </a>
@@ -48,7 +48,7 @@ export function LoginPage() {
                 <Button className="w-full" type="submit">
                     Iniciar sesión
                 </Button>
-                <Button className="w-full mt-4 text-gray-900" variant="link" type="button">
+                <Button className="w-full mt-6 text-gray-900" variant="link" type="button">
                     Crear nueva cuenta
                 </Button>
             </form>
