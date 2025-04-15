@@ -156,7 +156,7 @@ export function RegisterSalePage() {
                         <h2 className="text-lg font-medium">Medio de pago</h2>
                         <div className="flex flex-col md:flex-row gap-2">
                             <div
-                                className={`flex items-center space-x-3 border p-4 rounded-md flex-1 cursor-pointer ${selectedPayment === 'efectivo' ? 'border-primary bg-primary/5' : ''
+                                className={`flex items-center space-x-3 border p-4 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'efectivo' ? 'border-primary bg-primary/5' : ''
                                     }`}
                                 onClick={() => setSelectedPayment('efectivo')}
                             >
@@ -169,7 +169,7 @@ export function RegisterSalePage() {
                                 <Label className='font-normal' htmlFor="efectivo">Efectivo</Label>
                             </div>
                             <div
-                                className={`flex items-center space-x-3 border p-4 rounded-md flex-1 cursor-pointer ${selectedPayment === 'yape' ? 'border-primary bg-primary/5' : ''
+                                className={`flex items-center space-x-3 border p-4 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'yape' ? 'border-primary bg-primary/5' : ''
                                     }`}
                                 onClick={() => setSelectedPayment('yape')}
                             >

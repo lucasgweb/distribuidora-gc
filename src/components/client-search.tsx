@@ -56,49 +56,58 @@ export function ClientSearch({ clients, selectedClient, onSelect, searchQuery, s
                 className="w-full cursor-text text-sm"
             />
 
-            {isOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded shadow-lg">
-                    {isLoading ? (
-                        <div className="p-4 text-center">Cargando...</div>
-                    ) : (
-                        <Command shouldFilter={false}>
-                            <CommandGroup className="max-h-60 overflow-y-auto">
-                                {filteredClients.map((client) => (
-                                    <CommandItem
-                                        key={client.id}
-                                        value={client.name}
-                                        onSelect={() => {
-                                            onSelect(client);
-                                            setIsOpen(false);
-                                            setSearchQuery("");
-                                        }}
-                                        className="cursor-pointer px-4 py-2 hover:bg-muted/50"
-                                    >
-                                        <div className="flex flex-col gap-1 flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-medium truncate">{client.name}</span>
-                                                {selectedClient?.id === client.id && (
-                                                    <Badge className="bg-green-400 px-2 py-0.5 text-xs">
-                                                        Seleccionado
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                                                {client.email && <span>{client.email}</span>}
-                                                {client.phone && <span>• {client.phone}</span>}
-                                            </div>
-                                        </div>
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
+            {
+                clients.length > 0 && (
+                    <>
+                        {isOpen && (
+                            <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-xl shadow-lg">
+                                {isLoading ? (
+                                    <div className="p-4 text-center">Cargando...</div>
+                                ) : (
+                                    <Command shouldFilter={false}>
+                                        <CommandGroup className="max-h-60 overflow-y-auto">
+                                            {filteredClients.map((client) => (
+                                                <CommandItem
+                                                    key={client.id}
+                                                    value={client.name}
+                                                    onSelect={() => {
+                                                        onSelect(client);
+                                                        setIsOpen(false);
+                                                        setSearchQuery("");
+                                                    }}
+                                                    className="cursor-pointer px-4 py-2 hover:bg-muted/50"
+                                                >
+                                                    <div className="flex flex-col gap-1 flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-medium truncate">{client.name}</span>
+                                                            {selectedClient?.id === client.id && (
+                                                                <Badge className="bg-green-400 px-2 py-0.5 text-xs">
+                                                                    Seleccionado
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                                                            {client.email && <span>{client.email}</span>}
+                                                            {client.phone && <span>• {client.phone}</span>}
+                                                        </div>
+                                                    </div>
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
 
-                            <CommandEmpty className="py-2 px-4 text-sm">
-                                {searchQuery ? "Nenhum cliente encontrado" : "Digite para buscar..."}
-                            </CommandEmpty>
-                        </Command>
-                    )}
-                </div>
-            )}
+
+                                        <CommandEmpty className="py-2 px-4 text-sm">
+                                            {searchQuery ? "Nenhum cliente encontrado" : "Digite para buscar..."}
+                                        </CommandEmpty>
+                                    </Command>
+                                )}
+                            </div>
+                        )}
+                    </>
+                )
+            }
+
+
         </div>
     );
 }
