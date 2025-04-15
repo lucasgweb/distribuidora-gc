@@ -10,13 +10,13 @@ import {
 } from "../components/ui/select";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
 import { Label } from "../components/ui/label";
 import MoneySVG from '../assets/money.svg';
 import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
 import { Client } from '../dtos/client.dto';
 import { BottomNav } from '../components/bottom-nav';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 
 export function RegisterSalePage() {
     const navigate = useNavigate();
@@ -154,34 +154,37 @@ export function RegisterSalePage() {
 
                     <div className="space-y-3">
                         <h2 className="text-lg font-medium">Medio de pago</h2>
-                        <div className="flex flex-col md:flex-row gap-2">
+                        <RadioGroup
+                            value={selectedPayment || ''}
+                            onValueChange={(value) => setSelectedPayment(value as 'efectivo' | 'yape')}
+                            className="flex flex-col md:flex-row gap-2"
+                        >
                             <div
                                 className={`flex items-center space-x-3 border p-4 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'efectivo' ? 'border-primary bg-primary/5' : ''
                                     }`}
-                                onClick={() => setSelectedPayment('efectivo')}
                             >
-                                <Checkbox
-                                    id="efectivo"
-                                    checked={selectedPayment === 'efectivo'}
-                                    onCheckedChange={() => setSelectedPayment('efectivo')}
-                                />
+                                <RadioGroupItem value="efectivo" id="efectivo" className="sr-only" />
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'efectivo' ? 'border-primary bg-primary' : 'border-gray-300'
+                                    }`}>
+                                    {selectedPayment === 'efectivo' && <div className="w-2 h-2 rounded-full bg-white" />}
+                                </div>
                                 <img src={MoneySVG} alt="Efectivo" className="h-4 w-4" />
                                 <Label className='font-normal' htmlFor="efectivo">Efectivo</Label>
                             </div>
+
                             <div
                                 className={`flex items-center space-x-3 border p-4 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'yape' ? 'border-primary bg-primary/5' : ''
                                     }`}
-                                onClick={() => setSelectedPayment('yape')}
                             >
-                                <Checkbox
-                                    id="yape"
-                                    checked={selectedPayment === 'yape'}
-                                    onCheckedChange={() => setSelectedPayment('yape')}
-                                />
+                                <RadioGroupItem value="yape" id="yape" className="sr-only" />
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'yape' ? 'border-primary bg-primary' : 'border-gray-300'
+                                    }`}>
+                                    {selectedPayment === 'yape' && <div className="w-2 h-2 rounded-full bg-white" />}
+                                </div>
                                 <img src={SmartPhoneSVG} alt="Yape" className="h-4 w-4" />
                                 <Label className='font-normal' htmlFor="yape">Yape</Label>
                             </div>
-                        </div>
+                        </RadioGroup>
                     </div>
                 </div>
 
