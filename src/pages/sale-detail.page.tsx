@@ -1,194 +1,88 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/header";
-import { User, Package } from "lucide-react";
-import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-} from "../components/ui/select";
-import { Input } from "../components/ui/input";
+import { Check } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
-import { Label } from "../components/ui/label";
-import MoneySVG from '../assets/money.svg';
-import SmartPhoneSVG from '../assets/smartphone.svg';
-import { ClientSearch } from '../components/client-search';
-import { Client } from '../dtos/client.dto';
-import { BottomNav } from '../components/bottom-nav';
+import PaperSVG from "./../assets/papper.svg";
 
-
-export function SaleDetailPage() {
+export function SaleDetail() {
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [clients, setClients] = useState<Client[]>([]);
-    const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-
-
-
-    const searchClients = async (query: string) => {
-        try {
-            setIsLoading(true);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const mockData: Client[] = [
-                { id: '1', name: 'Cliente A', email: 'clientea@email.com', phone: '' },
-                { id: '2', name: 'Cliente B', phone: '(11) 99999-9999', email: '' },
-                { id: '3', name: 'Cliente C', email: 'clientec@email.com', phone: '' },
-            ];
-            setClients(
-                mockData.filter(client =>
-                    client.name.toLowerCase().includes(query.toLowerCase())
-                )
-            );
-        } catch (error) {
-            console.error("Erro na busca de clientes:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            if (searchQuery.length > 2) {
-                searchClients(searchQuery);
-            }
-        }, 500);
-
-        return () => clearTimeout(handler);
-    }, [searchQuery]);
 
     return (
         <div className="flex flex-col min-h-screen">
-            <div className="px-6 pb-24 max-w-2xl mx-auto w-full flex-1">
-                <Header title="Registrar Venta" onBack={() => navigate('/')} />
+            <div className="pb-24 max-w-2xl mx-auto w-full flex-1">
 
-                <div className=" space-y-6">
-                    {/* Seção Principal */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-medium">Información principal</h2>
+                <div className="px-4">
 
-                        <div className="space-y-4">
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Chofer</Label>
-                                    <Select>
-                                        <SelectTrigger className='w-full'>
-                                            <div className="flex items-center gap-2">
-                                                <User className="h-4 w-4 opacity-50" />
-                                                <SelectValue placeholder="Seleccionar Chofer" />
-                                            </div>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="1">Chofer 1</SelectItem>
-                                            <SelectItem value="2">Chofer 2</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Marca</Label>
-                                    <Select>
-                                        <SelectTrigger className='w-full'>
-                                            <div className="flex items-center gap-2">
-                                                <Package className="h-4 w-4 opacity-50" />
-                                                <SelectValue placeholder="Seleccionar marca" />
-                                            </div>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="m1">Marca 1</SelectItem>
-                                            <SelectItem value="m2">Marca 2</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 w-full relative">
-                                <Label>Cliente</Label>
-                                <ClientSearch
-                                    clients={clients}
-                                    selectedClient={selectedClient || undefined}
-                                    onSelect={(client) => setSelectedClient(client)}
-                                    searchQuery={searchQuery}
-                                    setSearchQuery={setSearchQuery}
-                                    isLoading={isLoading}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Informação de Venda */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-medium">Información venta</h2>
-
-                        <div className="space-y-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Pipeta</Label>
-                                    <Select defaultValue="1">
-                                        <SelectTrigger className='w-full'>
-                                            <SelectValue placeholder="Estado da pipeta" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="1">Llena</SelectItem>
-                                            <SelectItem value="2">Vacia</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-4">
-
-                                    <div className='space-y-2'>
-
-                                        <Label>
-                                            Kilos Vendidos
-                                        </Label>
-                                        <Input
-                                            type="number"
-                                            placeholder="0.00"
-                                            step="0.01"
-                                        />
-                                    </div>
-                                    <div className='space-y-2'>
-
-                                        <Label>Precio</Label>
-                                        <Input
-                                            type="number"
-                                            placeholder="0.00"
-                                            step="0.01"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Meio de Pagamento */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-medium">Medio de pago</h2>
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <div className="flex items-center space-x-3 border p-5 rounded-md flex-1">
-                                <Checkbox id="efectivo" defaultChecked />
-                                <img src={MoneySVG} alt="Efectivo" className="h-4 w-4" />
-                                <Label className='font-normal' htmlFor="efectivo">Efectivo</Label>
-                            </div>
-                            <div className="flex items-center space-x-3 border p-5 rounded-md flex-1">
-                                <Checkbox id="yape" />
-                                <img src={SmartPhoneSVG} alt="Yape" className="h-4 w-4" />
-                                <Label className='font-normal' htmlFor="yape">Yape</Label>
-                            </div>
-                        </div>
-                    </div>
+                    <Header title="Detalles de venta" onBack={() => navigate("/")} />
                 </div>
 
-                <Button className="w-full mt-4">
-                    Registrar Venta
-                </Button>
+                {/* Container principal com papel como fundo */}
+                <div className="relative mt-12 h-[580px]">
+                    {/* SVG do papel como fundo */}
+                    <img
+                        src={PaperSVG}
+                        alt="papel rasgado"
+                        className="absolute top-0  left-0 w-full object-cover pointer-events-none rounded-lg"
+                    />
+
+                    <div className="h-16 w-16 bg-primary flex justify-center items-center absolute rounded-full top-3 left-1/2 -translate-x-1/2">
+                        <Check className="text-white" size={28} />
+                    </div>
+
+                    {/* Conteúdo sobreposto */}
+                    <div className="relative z-10 p-16 space-y-6 h-full">
+                        {/* Seção de Detalles */}
+                        <div className="space-y-4">
+                            <div className="space-y-4">
+                                <div className="flex justify-between flex-col mt-4 items-center  p-4 rounded-md">
+                                    <span className="font-medium text-xs ">Pago Total</span>
+                                    <span className="text-3xl font-bold">$12.00</span>
+                                </div>
+
+                                <div className="space-y-6 texxt-xs">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600 text-md">Fecha</span>
+                                        <span className="text-md">12 Mayo 2024</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600 font-medium text-md">Marca</span>
+                                        <span className="text-md">A</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600 font-medium text-md">Cantidad</span>
+                                        <span className="text-md">1 Kilo</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600 font-medium text-md">Reference num</span>
+                                        <span className="text-md">101</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600  font-medium text-md">Cliente</span>
+                                        <span className="text-md">Cliente A</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600 font-medium text-md">Medio de pago</span>
+                                        <span className="text-green-600 text-md">Efectivo</span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    {/* Botão posicionado na parte inferior */}
+                    <div className="absolute -bottom-6 left-0 right-0 px-6">
+                        <Button
+                            className="w-full"
+                            onClick={() => navigate("/")}
+                        >
+                            Volver a la página de inicio
+                        </Button>
+                    </div>
+                </div>
             </div>
 
-
-            <BottomNav />
         </div>
     );
 }

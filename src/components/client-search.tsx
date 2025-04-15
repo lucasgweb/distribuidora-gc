@@ -25,7 +25,6 @@ export function ClientSearch({ clients, selectedClient, onSelect, searchQuery, s
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Filtra os clientes com base no termo de busca
     const filteredClients = clients.filter(client =>
         client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,7 +53,7 @@ export function ClientSearch({ clients, selectedClient, onSelect, searchQuery, s
                     setIsOpen(true);
                 }}
                 onFocus={() => setIsOpen(true)}
-                className="w-full cursor-text"
+                className="w-full cursor-text text-sm"
             />
 
             {isOpen && (
