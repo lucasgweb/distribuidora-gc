@@ -157,35 +157,47 @@ export function RegisterSalePage() {
                     <div className="space-y-3">
                         <h2 className="text-lg font-semibold">Medio de pago</h2>
                         <RadioGroup
-                            value={selectedPayment || ''}
-                            onValueChange={(value) => setSelectedPayment(value as 'efectivo' | 'yape')}
+                            value={selectedPayment || ""}
+                            onValueChange={(value: string) => setSelectedPayment(value as 'efectivo' | 'yape')}
                             className="flex flex-col md:flex-row gap-2"
                         >
-                            <div
+                            {/* Opción Efectivo */}
+                            <label // Cambiado de div a label para mejor accesibilidad
+                                htmlFor="efectivo"
                                 className={`flex items-center space-x-3 border p-4 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'efectivo' ? 'border-primary bg-primary/5' : ''
                                     }`}
                             >
-                                <RadioGroupItem value="efectivo" id="efectivo" className="sr-only" />
+                                <RadioGroupItem
+                                    value="efectivo"
+                                    id="efectivo"
+                                    className="sr-only"
+                                />
                                 <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'efectivo' ? 'border-primary bg-primary' : 'border-gray-300'
                                     }`}>
                                     {selectedPayment === 'efectivo' && <div className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
                                 <img src={MoneySVG} alt="Efectivo" className="h-4 w-4" />
-                                <Label className='font-normal' htmlFor="efectivo">Efectivo</Label>
-                            </div>
+                                <span className='font-normal'>Efectivo</span>
+                            </label>
 
-                            <div
+                            {/* Opción Yape */}
+                            <label // Cambiado de div a label para mejor accesibilidad
+                                htmlFor="yape"
                                 className={`flex items-center space-x-3 border p-4 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'yape' ? 'border-primary bg-primary/5' : ''
                                     }`}
                             >
-                                <RadioGroupItem value="yape" id="yape" className="sr-only" />
+                                <RadioGroupItem
+                                    value="yape"
+                                    id="yape"
+                                    className="sr-only"
+                                />
                                 <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'yape' ? 'border-primary bg-primary' : 'border-gray-300'
                                     }`}>
                                     {selectedPayment === 'yape' && <div className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
                                 <img src={SmartPhoneSVG} alt="Yape" className="h-4 w-4" />
-                                <Label className='font-normal' htmlFor="yape">Yape</Label>
-                            </div>
+                                <span className='font-normal'>Yape</span>
+                            </label>
                         </RadioGroup>
                     </div>
                 </div>
