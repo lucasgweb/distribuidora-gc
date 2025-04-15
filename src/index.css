@@ -136,7 +136,3 @@ html {
   -ms-overflow-style: none;
   overflow: -moz-scrollbars-none;
 }
-
-body {
-  overflow: hidden;
-}
