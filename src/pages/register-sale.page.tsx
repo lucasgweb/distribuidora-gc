@@ -63,7 +63,7 @@ export function RegisterSalePage() {
 
                 <div className="space-y-4">
                     <div className="space-y-3">
-                        <h2 className="text-lg font-medium">Información principal</h2>
+                        <h2 className="text-lg font-semibold">Información principal</h2>
 
                         <div className="space-y-3">
                             <div className="grid md:grid-cols-2 gap-2">
@@ -117,7 +117,7 @@ export function RegisterSalePage() {
                     </div>
 
                     <div className="space-y-3">
-                        <h2 className="text-lg font-medium">Información de venta</h2>
+                        <h2 className="text-lg font-semibold">Información de venta</h2>
                         <div className="space-y-2">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <div className="space-y-1">
@@ -155,7 +155,7 @@ export function RegisterSalePage() {
                     </div>
 
                     <div className="space-y-3">
-                        <h2 className="text-lg font-medium">Medio de pago</h2>
+                        <h2 className="text-lg font-semibold">Medio de pago</h2>
                         <RadioGroup
                             value={selectedPayment || ''}
                             onValueChange={(value) => setSelectedPayment(value as 'efectivo' | 'yape')}
