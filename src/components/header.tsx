@@ -1,11 +1,12 @@
-import { ArrowLeft, Menu } from "lucide-react"
+import { ArrowLeft, Menu, X } from "lucide-react"
 
 type Props = {
     title: string
     onBack?: () => void
+    closeIcon?: boolean
 }
 
-export function Header({ title, onBack }: Props) {
+export function Header({ title, onBack, closeIcon }: Props) {
     return (
         <div className="flex items-center justify-between w-full py-2 bg-white">
             {onBack ? (
@@ -15,7 +16,12 @@ export function Header({ title, onBack }: Props) {
                         onClick={onBack}
                         aria-label="Voltar"
                     >
-                        <ArrowLeft className="w-6 h-6" />
+                        {closeIcon ? (
+                            <X className="w-5 h-5" />
+                        ) : (
+
+                            <ArrowLeft className="w-6 h-6" />
+                        )}
                     </button>
                     <h1 className="text-lg font-semibold text-center flex-1">
                         {title}

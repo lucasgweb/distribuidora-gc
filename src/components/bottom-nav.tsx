@@ -24,7 +24,7 @@ export function BottomNav() {
                             <button
                                 onClick={() => navigate('register-menu')}
                                 key={index}
-                                className="bg-primary m-auto text-white p-2 rounded-full justify-center items-center align-middle flex h-12 w-12 shadow-lg hover:bg-primary/90 transition-colors"
+                                className="bg-primary m-auto text-white p-2 rounded-full justify-center items-center align-middle flex h-14 w-14 shadow-lg hover:bg-primary/90 transition-colors"
                             >
                                 <Plus className="w-6 h-6" />
                             </button>

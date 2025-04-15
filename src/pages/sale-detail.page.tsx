@@ -13,7 +13,7 @@ export function SaleDetail() {
 
                 <div className="px-4">
 
-                    <Header title="Detalles de venta" onBack={() => navigate("/")} />
+                    <Header title="Detalles de venta" onBack={() => navigate("/")} closeIcon />
                 </div>
 
                 {/* Container principal com papel como fundo */}
