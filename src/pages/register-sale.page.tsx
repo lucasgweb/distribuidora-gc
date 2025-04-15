@@ -93,9 +93,9 @@ export function RegisterSalePage() {
                                         <SelectContent>
                                             <SelectItem value="m1">DELTA 5</SelectItem>
                                             <SelectItem value="m2">DELTA 10</SelectItem>
-                                            <SelectItem value="m2">DELTA 45</SelectItem>
-                                            <SelectItem value="m2">SOL 45</SelectItem>
-                                            <SelectItem value="m2">DELTA 10</SelectItem>
+                                            <SelectItem value="m3">DELTA 45</SelectItem>
+                                            <SelectItem value="m4">SOL 45</SelectItem>
+                                            <SelectItem value="m5">DELTA 10</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
