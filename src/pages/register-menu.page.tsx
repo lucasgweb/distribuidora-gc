@@ -8,7 +8,7 @@ export function RegisterMenuPage() {
 
     return (
         <>
-            <div className="px-4">
+            <div className="px-6">
                 <Header title="Nuevo registro" onBack={() => navigate('/')} />
                 <div className="mt-6 space-y-4">
                     <button

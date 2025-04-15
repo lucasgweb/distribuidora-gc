@@ -23,7 +23,7 @@ export function HomePage() {
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
-            <header className="bg-white p-4">
+            <header className="bg-white px-6">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex items-center justify-between">
                         <Header title="Hello Eduardo 👋" />
@@ -126,7 +126,7 @@ export function HomePage() {
             </header>
 
             {/* Conteúdo Principal */}
-            <main className="max-w-6xl mx-auto px-4 mb-22">
+            <main className="max-w-6xl mx-auto px-6 mt-4 mb-22">
 
                 <ChartFake />
 

@@ -58,7 +58,7 @@ export function RegisterSalePage() {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <div className="px-4 pb-10 max-w-2xl mx-auto w-full flex-1">
+            <div className="px-6 pb-10 max-w-2xl mx-auto w-full flex-1">
                 <Header title="Registrar Venta" onBack={() => navigate('/')} />
 
                 <div className="space-y-4">

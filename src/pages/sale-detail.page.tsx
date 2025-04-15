@@ -11,13 +11,13 @@ export function SaleDetail() {
         <div className="flex flex-col min-h-screen">
             <div className="pb-24 max-w-2xl mx-auto w-full flex-1">
 
-                <div className="px-4">
+                <div className="px-6">
 
                     <Header title="Detalles de venta" onBack={() => navigate("/")} closeIcon />
                 </div>
 
                 {/* Container principal com papel como fundo */}
-                <div className="relative mt-12 h-[580px]">
+                <div className="relative mt-12 h-[590px]">
                     {/* SVG do papel como fundo */}
                     <img
                         src={PaperSVG}
