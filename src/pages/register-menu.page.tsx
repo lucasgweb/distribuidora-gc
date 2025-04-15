@@ -10,7 +10,6 @@ export function RegisterMenuPage() {
         <>
             <div className="px-4">
                 <Header title="Nuevo registro" onBack={() => navigate('/')} />
-
                 <div className="mt-6 space-y-4">
                     <button
                         onClick={() => navigate('/register-sale')}

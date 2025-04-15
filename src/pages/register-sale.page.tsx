@@ -15,7 +15,6 @@ import MoneySVG from '../assets/money.svg';
 import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
 import { Client } from '../dtos/client.dto';
-import { BottomNav } from '../components/bottom-nav';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 
 export function RegisterSalePage() {
@@ -59,7 +58,7 @@ export function RegisterSalePage() {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <div className="px-6 pb-24 max-w-2xl mx-auto w-full flex-1">
+            <div className="px-6 pb-10 max-w-2xl mx-auto w-full flex-1">
                 <Header title="Registrar Venta" onBack={() => navigate('/')} />
 
                 <div className="space-y-4">
@@ -96,7 +95,7 @@ export function RegisterSalePage() {
                                             <SelectItem value="m2">DELTA 10</SelectItem>
                                             <SelectItem value="m2">DELTA 45</SelectItem>
                                             <SelectItem value="m2">SOL 45</SelectItem>
-                                            <SelectItem value="m2">LLAMA 10</SelectItem>
+                                            <SelectItem value="m2">DELTA 10</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -195,8 +194,6 @@ export function RegisterSalePage() {
                     Registrar Venta
                 </Button>
             </div>
-
-            <BottomNav />
         </div>
     );
 }

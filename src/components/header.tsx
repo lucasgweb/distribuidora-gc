@@ -24,7 +24,7 @@ export function Header({ title, onBack }: Props) {
                     <div className="w-6" />
                 </div>
             ) : (
-                <div className="flex items-center flex-1 gap-4 justify-between px-4">
+                <div className="flex items-center flex-1 gap-4 justify-between">
                     <button
                         className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                         aria-label="Abrir menu"
