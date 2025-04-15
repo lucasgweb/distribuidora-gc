@@ -92,8 +92,11 @@ export function RegisterSalePage() {
                                             </div>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="m1">Marca 1</SelectItem>
-                                            <SelectItem value="m2">Marca 2</SelectItem>
+                                            <SelectItem value="m1">DELTA 5</SelectItem>
+                                            <SelectItem value="m2">DELTA 10</SelectItem>
+                                            <SelectItem value="m2">DELTA 45</SelectItem>
+                                            <SelectItem value="m2">SOL 45</SelectItem>
+                                            <SelectItem value="m2">LLAMA 10</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
