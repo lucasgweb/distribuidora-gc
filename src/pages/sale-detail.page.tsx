@@ -17,6 +17,7 @@ import MoneySVG from '../assets/money.svg';
 import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
 import { Client } from '../dtos/client.dto';
+import { BottomNav } from '../components/bottom-nav';
 
 
 export function SaleDetailPage() {
@@ -167,12 +168,12 @@ export function SaleDetailPage() {
                     <div className="space-y-4">
                         <h2 className="text-lg font-medium">Medio de pago</h2>
                         <div className="flex flex-col md:flex-row gap-4">
-                            <div className="flex items-center space-x-3 border p-4 rounded-md flex-1">
+                            <div className="flex items-center space-x-3 border p-5 rounded-md flex-1">
                                 <Checkbox id="efectivo" defaultChecked />
                                 <img src={MoneySVG} alt="Efectivo" className="h-4 w-4" />
                                 <Label className='font-normal' htmlFor="efectivo">Efectivo</Label>
                             </div>
-                            <div className="flex items-center space-x-3 border p-4 rounded-md flex-1">
+                            <div className="flex items-center space-x-3 border p-5 rounded-md flex-1">
                                 <Checkbox id="yape" />
                                 <img src={SmartPhoneSVG} alt="Yape" className="h-4 w-4" />
                                 <Label className='font-normal' htmlFor="yape">Yape</Label>
@@ -180,16 +181,14 @@ export function SaleDetailPage() {
                         </div>
                     </div>
                 </div>
+
+                <Button className="w-full mt-4">
+                    Registrar Venta
+                </Button>
             </div>
 
-            {/* Botão Fixo */}
-            <div className="fixed bottom-0 left-0 right-0 pb-4 bg-background border-t">
-                <div className="max-w-2xl mx-auto px-4 py-3 w-full">
-                    <Button className="w-full" size="lg">
-                        Registrar Venta
-                    </Button>
-                </div>
-            </div>
+
+            <BottomNav />
         </div>
     );
 }

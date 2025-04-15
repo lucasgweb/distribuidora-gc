@@ -45,8 +45,9 @@ export function ClientSearch({ clients, selectedClient, onSelect, searchQuery, s
 
     return (
         <div ref={containerRef} className="relative w-full">
+
             <Input
-                placeholder="Buscar cliente..."
+                placeholder="Buscar Cliente"
                 value={selectedClient?.name || searchQuery}
                 onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -59,7 +60,7 @@ export function ClientSearch({ clients, selectedClient, onSelect, searchQuery, s
             {isOpen && (
                 <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded shadow-lg">
                     {isLoading ? (
-                        <div className="p-4 text-center">Carregando...</div>
+                        <div className="p-4 text-center">Cargando...</div>
                     ) : (
                         <Command shouldFilter={false}>
                             <CommandGroup className="max-h-60 overflow-y-auto">
