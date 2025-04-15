@@ -23,7 +23,7 @@ export function Header({ title, onBack, closeIcon }: Props) {
                             <ArrowLeft className="w-6 h-6" />
                         )}
                     </button>
-                    <h1 className="text-lg font-semibold text-center flex-1">
+                    <h1 className="text-xl font-semibold text-center flex-1">
                         {title}
                     </h1>
                     {/* Espaço vazio para balancear o layout */}
