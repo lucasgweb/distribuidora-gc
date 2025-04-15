@@ -164,7 +164,7 @@ export function RegisterSalePage() {
                             {/* Opción Efectivo */}
                             <label // Cambiado de div a label para mejor accesibilidad
                                 htmlFor="efectivo"
-                                className={`flex items-center space-x-3 border p-4 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'efectivo' ? 'border-primary bg-primary/5' : ''
+                                className={`flex items-center space-x-3 border p-3 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'efectivo' ? 'border-primary bg-primary/5' : ''
                                     }`}
                             >
                                 <RadioGroupItem
@@ -183,7 +183,7 @@ export function RegisterSalePage() {
                             {/* Opción Yape */}
                             <label // Cambiado de div a label para mejor accesibilidad
                                 htmlFor="yape"
-                                className={`flex items-center space-x-3 border p-4 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'yape' ? 'border-primary bg-primary/5' : ''
+                                className={`flex items-center space-x-3 border p-3 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'yape' ? 'border-primary bg-primary/5' : ''
                                     }`}
                             >
                                 <RadioGroupItem
