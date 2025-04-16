@@ -136,3 +136,129 @@ html {
   -ms-overflow-style: none;
   overflow: -moz-scrollbars-none;
 }
+
+/* Arquivo CSS global (ex: index.css) */
+@keyframes scale-up {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes check-in {
+  0% {
+    transform: scale(0) rotate(-90deg);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes ping-once {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes paper-enter {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes amount-pop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes button-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-delay {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-scale-up {
+  animation: scale-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-check-in {
+  animation: check-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-ping-once {
+  animation: ping-once 1s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+.animate-paper-enter {
+  animation: paper-enter 0.6s ease-out;
+}
+
+.animate-content-enter {
+  animation: content-enter 0.6s 0.3s ease-out forwards;
+}
+
+.animate-amount-pop {
+  animation: amount-pop 0.6s 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-button-enter {
+  animation: button-enter 0.6s 0.5s ease-out forwards;
+}
+
+.animate-fade-in-delay {
+  animation: fade-in-delay 0.5s 0.8s ease-out forwards;
+  opacity: 0;
+}
