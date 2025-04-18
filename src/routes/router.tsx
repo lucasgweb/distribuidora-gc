@@ -6,6 +6,10 @@ import { HomePage } from "../pages/home.page";
 import { RegisterMenuPage } from "../pages/register-menu.page";
 import { SaleDetail } from "../pages/sale-detail.page";
 import { RegisterSalePage } from "../pages/register-sale.page";
+import { DriversListPage } from "../pages/drivers-list.page";
+import { RegisterDriverPage } from "../pages/register-driver.page";
+import { InventoryListPage } from "../pages/inventory.list.page";
+import { InventoryMovementPage } from "../pages/inventory.movement.page";
 export const router = createBrowserRouter([
     {
         path: "/",
@@ -27,6 +31,22 @@ export const router = createBrowserRouter([
             {
                 path: "/sale-detail",
                 element: <SaleDetail />
+            },
+            {
+                path: "/drivers",
+                element: <DriversListPage />
+            },
+            {
+                path: "/register-driver",
+                element: <RegisterDriverPage />
+            },
+            {
+                path: "/inventory",
+                element: <InventoryListPage />
+            },
+            {
+                path: "/inventory-movement",
+                element: <InventoryMovementPage />
             },
         ]
     },

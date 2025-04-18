@@ -23,7 +23,7 @@ export function RegisterMenuPage() {
                     </button>
 
                     <button
-                        onClick={() => navigate('/inventario')}
+                        onClick={() => navigate('/inventory-movement')}
                         className="w-full flex items-center justify-between border border-gray-200 rounded-xl p-8  hover:bg-gray-50 transition"
                     >
                         <div className="flex items-center space-x-4">
