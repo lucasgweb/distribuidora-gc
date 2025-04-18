@@ -267,14 +267,14 @@ export function RegisterSalePage() {
                             className="flex flex-col md:flex-row gap-2"
                         >
                             <label
-                                htmlFor="EFECTIVO"
+                                htmlFor="CASH"
                                 className={`flex items-center space-x-3 border p-3 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'CASH' ? 'border-primary bg-primary/5' : ''}`}
                             >
-                                <RadioGroupItem value="EFECTIVO" id="EFECTIVO" className="sr-only" />
+                                <RadioGroupItem value="CASH" id="CASH" className="sr-only" />
                                 <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'CASH' ? 'border-primary bg-primary' : 'border-gray-300'}`}>
                                     {selectedPayment === 'CASH' && <div className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
-                                <img src={MoneySVG} alt="Efectivo" className="h-4 w-4" />
+                                <img src={MoneySVG} alt="CASH" className="h-4 w-4" />
                                 <span className='font-normal'>Efectivo</span>
                             </label>
 
