@@ -16,72 +16,66 @@ import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
 import { ClientDTO } from '../dtos/client.dto';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import { X, Plus, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
-
-interface Item {
-    id: number;
-    name: string;
-    price_full: number;
-    cilinder: number;
-}
+import { X, Plus, ArrowUpCircle, ArrowDownCircle, Loader2 } from 'lucide-react';
+import { listClients } from '../services/clients.service';
+import { listProducts } from '../services/products.service';
+import { ProductDTO } from '../dtos/product.dto';
+import { CreateSaleDTO, CreateSaleItemDTO } from '../dtos/sale.dto';
+import { createSale } from '../services/sales.service';
 
 interface OrderItem {
-    item: Item;
+    item: ProductDTO;
     sold: number;
     returned: number;
-    customPrice?: number;
+    negotiatedPrice?: number;
+    negotiatedCylinderPrice?: number;
 }
-
-const initialItems: Item[] = [
-    { id: 1, name: 'DELTA 5', price_full: 150, cilinder: 100 },
-    { id: 2, name: 'DELTA 10', price_full: 200, cilinder: 120 },
-    { id: 3, name: 'SOL 45', price_full: 250, cilinder: 150 },
-];
 
 export function RegisterSalePage() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [clients, setClients] = useState<ClientDTO[]>([]);
     const [selectedClient, setSelectedClient] = useState<ClientDTO | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [selectedPayment, setSelectedPayment] = useState<'efectivo' | 'yape'>('efectivo');
+    const [isLoadingClients, setIsLoadingClients] = useState(false);
+    const [products, setProducts] = useState<ProductDTO[]>([]);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState<'CASH' | 'YAPE'>('CASH');
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSubmitingSale, setIsSubmitingSale] = useState(false);
     const [tempItem, setTempItem] = useState<{
-        itemId: number | null;
+        itemId: string | null;
         sold: number;
         returned: number;
-        customPrice: number | null;
-    }>({ itemId: null, sold: 0, returned: 0, customPrice: null });
+        negotiatedPrice?: number;
+        negotiatedCylinderPrice?: number;
+    }>({ itemId: null, sold: 0, returned: 0 });
+
+    useEffect(() => {
+        const loadProducts = async () => {
+            try {
+                setIsLoadingProducts(true);
+                const response = await listProducts({});
+                setProducts(response.products);
+            } catch (error) {
+                console.error("Erro ao carregar produtos:", error);
+            } finally {
+                setIsLoadingProducts(false);
+            }
+        };
+        loadProducts();
+    }, []);
 
     const searchClients = async (query: string) => {
+        console.log(query)
         try {
-            setIsLoading(true);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const mockData: ClientDTO[] = [
-                {
-                    id: '1', name: 'Cliente A', email: 'clientea@email.com', phone: '', dni: '', address: '',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    id: '2', name: 'Cliente B', phone: '(11) 99999-9999', email: '', dni: '', address: '',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    id: '3', name: 'Cliente C', email: 'clientec@email.com', phone: '', dni: '', address: '',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-            ];
-            setClients(mockData.filter(client =>
-                client.name.toLowerCase().includes(query.toLowerCase())
-            ));
+            setIsLoadingClients(true);
+            const response = await listClients({ name: query });
+            setClients(response.clients);
         } catch (error) {
-            console.error("Error en la búsqueda de clientes:", error);
+            console.error("Erro na busca de clientes:", error);
         } finally {
-            setIsLoading(false);
+            setIsLoadingClients(false);
         }
     };
 
@@ -95,32 +89,21 @@ export function RegisterSalePage() {
         return () => clearTimeout(handler);
     }, [searchQuery]);
 
-    useEffect(() => {
-        if (tempItem.itemId) {
-            const selectedItem = initialItems.find(item => item.id === tempItem.itemId);
-            if (selectedItem && tempItem.customPrice === null) {
-                setTempItem(prev => ({
-                    ...prev,
-                    customPrice: selectedItem.price_full
-                }));
-            }
-        }
-    }, [tempItem.itemId]);
-
     const openAddItemModal = () => {
-        setTempItem({ itemId: null, sold: 0, returned: 0, customPrice: null });
+        setTempItem({ itemId: null, sold: 0, returned: 0 });
         setIsModalOpen(true);
     };
 
     const addItemToOrder = () => {
         if (tempItem.itemId && (tempItem.sold > 0 || tempItem.returned > 0)) {
-            const selectedItem = initialItems.find(item => item.id === tempItem.itemId);
+            const selectedItem = products.find(item => item.id === tempItem.itemId);
             if (selectedItem) {
                 const newItem: OrderItem = {
                     item: selectedItem,
                     sold: tempItem.sold,
                     returned: tempItem.returned,
-                    customPrice: tempItem.customPrice !== null && tempItem.customPrice !== selectedItem.price_full ? tempItem.customPrice : undefined
+                    negotiatedPrice: tempItem.negotiatedPrice,
+                    negotiatedCylinderPrice: tempItem.negotiatedCylinderPrice
                 };
                 setOrderItems(prev => [...prev, newItem]);
                 setIsModalOpen(false);
@@ -133,21 +116,51 @@ export function RegisterSalePage() {
     };
 
     const calculateTotal = () => {
-        return orderItems.reduce((total, { sold, returned, item, customPrice }) => {
-            const actualPrice = customPrice !== undefined ? customPrice : item.price_full;
-            return total + (sold * actualPrice - returned * item.cilinder);
+        return orderItems.reduce((total, { sold, returned, item, negotiatedPrice, negotiatedCylinderPrice }) => {
+            const price = negotiatedPrice ?? item.basePrice;
+            const cylinderPrice = negotiatedCylinderPrice ?? item.emptyCylinderPrice;
+            return total + (sold * price - returned * cylinderPrice);
         }, 0);
     };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'sold' | 'returned' | 'customPrice') => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'sold' | 'returned' | 'negotiatedPrice' | 'negotiatedCylinderPrice') => {
         const value = e.target.value;
+
+        // Permite campo vazio temporariamente
         if (value === '') {
-            setTempItem(prev => ({ ...prev, [field]: field === 'customPrice' ? null : 0 }));
-        } else {
-            const numValue = parseFloat(value);
-            if (!isNaN(numValue)) {
-                setTempItem(prev => ({ ...prev, [field]: numValue >= 0 ? numValue : 0 }));
-            }
+            setTempItem(prev => ({ ...prev, [field]: undefined }));
+            return;
+        }
+
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+            setTempItem(prev => ({ ...prev, [field]: numValue >= 0 ? numValue : 0 }));
+        }
+    };
+
+    const handleSubmitSale = async () => {
+
+        setIsSubmitingSale(true);
+        if (!selectedClient || orderItems.length === 0) return;
+
+        const saleData: CreateSaleDTO = {
+            clientId: selectedClient.id,
+            paymentMethod: selectedPayment,
+            items: orderItems.map<CreateSaleItemDTO>(item => ({
+                productId: item.item.id,
+                soldQuantity: item.sold,
+                returnedQuantity: item.returned,
+                negotiatedPrice: item.negotiatedPrice,
+                negotiatedCylinderPrice: item.negotiatedCylinderPrice
+            }))
+        };
+
+        try {
+            const response = await createSale(saleData);
+            setIsSubmitingSale(false)
+            navigate(`/sale-detail/${response.saleId}`);
+        } catch (error) {
+            console.error("Erro ao registrar venda:", error);
+            alert("Erro ao registrar venda");
         }
     };
 
@@ -157,11 +170,10 @@ export function RegisterSalePage() {
                 <Header title="Registrar Venta" onBack={() => navigate('/')} />
 
                 <div className="space-y-6">
-                    {/* Sección Principal */}
+                    {/* Seção Principal */}
                     <div className="space-y-4">
                         <div className="grid gap-4">
-
-                            <h2 className="text-md font-semibold">Información principal</h2>
+                            <h2 className="text-md font-semibold">Informação principal</h2>
                             <div className="space-y-2">
                                 <Label>Cliente</Label>
                                 <ClientSearch
@@ -170,16 +182,16 @@ export function RegisterSalePage() {
                                     onSelect={setSelectedClient}
                                     searchQuery={searchQuery}
                                     setSearchQuery={setSearchQuery}
-                                    isLoading={isLoading}
+                                    isLoading={isLoadingClients}
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Sección de Pedido */}
+                    {/* Seção de Pedido */}
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-md font-semibold">Información venta</h2>
+                            <h2 className="text-md font-semibold">Informação venta</h2>
                             <Button size="sm" onClick={openAddItemModal}>
                                 <Plus className="w-4 h-4 mr-2" />
                                 Agregar Item
@@ -195,41 +207,35 @@ export function RegisterSalePage() {
                                 {orderItems.map((orderItem, index) => (
                                     <div key={index} className="py-2 px-3 hover:bg-gray-50 group">
                                         <div className="flex items-center justify-between gap-2">
-                                            {/* Left Section */}
                                             <div className="flex items-center gap-3 flex-1">
                                                 <span className="font-medium text-sm min-w-[80px]">
                                                     {orderItem.item.name}
                                                 </span>
-
-                                                {orderItem.customPrice && (
+                                                {(orderItem.negotiatedPrice || orderItem.negotiatedCylinderPrice) && (
                                                     <span className="text-xs px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded">
                                                         Personalizado
                                                     </span>
                                                 )}
                                             </div>
 
-                                            {/* Middle Section */}
                                             <div className="flex items-center gap-4">
                                                 <div className="flex items-center gap-1 text-green-600">
                                                     <ArrowUpCircle className="w-4 h-4" />
                                                     <span className="text-sm font-medium text-gray-700">{orderItem.sold}</span>
                                                 </div>
-
                                                 <div className="flex items-center gap-1 text-red-600">
                                                     <ArrowDownCircle className="w-4 h-4" />
                                                     <span className="text-sm font-medium text-gray-700">{orderItem.returned}</span>
                                                 </div>
                                             </div>
 
-                                            {/* Right Section */}
                                             <div className="flex items-center gap-3">
                                                 <span className="text-sm font-medium min-w-[70px] text-right">
                                                     ${(
-                                                        (orderItem.customPrice ?? orderItem.item.price_full) * orderItem.sold -
-                                                        orderItem.returned * orderItem.item.cilinder
+                                                        (orderItem.negotiatedPrice || orderItem.item.basePrice) * orderItem.sold -
+                                                        orderItem.returned * (orderItem.negotiatedCylinderPrice || orderItem.item.emptyCylinderPrice)
                                                     ).toFixed(2)}
                                                 </span>
-
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -252,46 +258,33 @@ export function RegisterSalePage() {
                         )}
                     </div>
 
+                    {/* Seção de Pagamento */}
                     <div className="space-y-3">
                         <h2 className="text-md font-semibold">Medio de pago</h2>
                         <RadioGroup
-                            value={selectedPayment || ""}
-                            onValueChange={(value: string) => setSelectedPayment(value as 'efectivo' | 'yape')}
+                            value={selectedPayment}
+                            onValueChange={(value) => setSelectedPayment(value as 'CASH' | 'YAPE')}
                             className="flex flex-col md:flex-row gap-2"
                         >
-                            {/* Opción Efectivo */}
-                            <label // Cambiado de div a label para mejor accesibilidad
-                                htmlFor="efectivo"
-                                className={`flex items-center space-x-3 border p-3 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'efectivo' ? 'border-primary bg-primary/5' : ''
-                                    }`}
+                            <label
+                                htmlFor="EFECTIVO"
+                                className={`flex items-center space-x-3 border p-3 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'CASH' ? 'border-primary bg-primary/5' : ''}`}
                             >
-                                <RadioGroupItem
-                                    value="efectivo"
-                                    id="efectivo"
-                                    className="sr-only"
-                                />
-                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'efectivo' ? 'border-primary bg-primary' : 'border-gray-300'
-                                    }`}>
-                                    {selectedPayment === 'efectivo' && <div className="w-2 h-2 rounded-full bg-white" />}
+                                <RadioGroupItem value="EFECTIVO" id="EFECTIVO" className="sr-only" />
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'CASH' ? 'border-primary bg-primary' : 'border-gray-300'}`}>
+                                    {selectedPayment === 'CASH' && <div className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
                                 <img src={MoneySVG} alt="Efectivo" className="h-4 w-4" />
                                 <span className='font-normal'>Efectivo</span>
                             </label>
 
-                            {/* Opción Yape */}
-                            <label // Cambiado de div a label para mejor accesibilidad
-                                htmlFor="yape"
-                                className={`flex items-center space-x-3 border p-3 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'yape' ? 'border-primary bg-primary/5' : ''
-                                    }`}
+                            <label
+                                htmlFor="YAPE"
+                                className={`flex items-center space-x-3 border p-3 rounded-xl flex-1 cursor-pointer ${selectedPayment === 'YAPE' ? 'border-primary bg-primary/5' : ''}`}
                             >
-                                <RadioGroupItem
-                                    value="yape"
-                                    id="yape"
-                                    className="sr-only"
-                                />
-                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'yape' ? 'border-primary bg-primary' : 'border-gray-300'
-                                    }`}>
-                                    {selectedPayment === 'yape' && <div className="w-2 h-2 rounded-full bg-white" />}
+                                <RadioGroupItem value="YAPE" id="YAPE" className="sr-only" />
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === 'YAPE' ? 'border-primary bg-primary' : 'border-gray-300'}`}>
+                                    {selectedPayment === 'YAPE' && <div className="w-2 h-2 rounded-full bg-white" />}
                                 </div>
                                 <img src={SmartPhoneSVG} alt="Yape" className="h-4 w-4" />
                                 <span className='font-normal'>Yape</span>
@@ -299,13 +292,19 @@ export function RegisterSalePage() {
                         </RadioGroup>
                     </div>
 
-                    <Button className="w-full" onClick={() => navigate('/sale-detail')} disabled={!orderItems.length}>
+                    <Button
+                        className="w-full"
+                        onClick={handleSubmitSale}
+                        disabled={!orderItems.length || !selectedClient}
+                    >
+                        {isSubmitingSale && (
+                            <Loader2 className='h-6 w-6 animate-spin text-white' />
+                        )}
                         Registrar Venta
                     </Button>
                 </div>
             </div>
 
-            {/* Modal para agregar items */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center z-50">
                     <div className="w-full max-w-md bg-background rounded-t-2xl md:rounded-xl p-6 animate-in slide-in-from-bottom md:zoom-in-95">
@@ -322,66 +321,108 @@ export function RegisterSalePage() {
 
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Marca</Label>
+                                <Label>Producto</Label>
                                 <Select
-                                    value={tempItem.itemId?.toString() || ""}
-                                    onValueChange={value => setTempItem(prev => ({
-                                        ...prev,
-                                        itemId: Number(value),
-                                        customPrice: initialItems.find(item => item.id === Number(value))?.price_full || null
-                                    }))}
+                                    value={tempItem.itemId || ""}
+                                    onValueChange={value => {
+                                        setTempItem(prev => ({
+                                            ...prev,
+                                            itemId: value,
+                                            negotiatedPrice: undefined,
+                                            negotiatedCylinderPrice: undefined
+                                        }));
+                                    }}
+                                    disabled={isLoadingProducts}
                                 >
                                     <SelectTrigger className='w-full'>
-                                        <SelectValue placeholder="Seleccionar marca" />
+                                        <SelectValue placeholder="Seleccionar producto" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {initialItems.map(item => (
-                                            <SelectItem key={item.id} value={item.id.toString()}>
-                                                {item.name}
+                                        {products.map(product => (
+                                            <SelectItem key={product.id} value={product.id}>
+                                                {product.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            <div className="flex flex-col gap-4">
-                                <div className="space-y-2">
-                                    <Label>Vendidos</Label>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        value={tempItem.sold === 0 && tempItem.sold.toString() === '0' ? '' : tempItem.sold}
-                                        onChange={(e) => handleInputChange(e, 'sold')}
-                                    />
-                                </div>
+                            {tempItem.itemId && (
+                                <div className="flex flex-col gap-4">
 
-                                <div className="space-y-2">
-                                    <Label>Devueltos</Label>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        value={tempItem.returned === 0 && tempItem.returned.toString() === '0' ? '' : tempItem.returned}
-                                        onChange={(e) => handleInputChange(e, 'returned')}
-                                    />
-                                </div>
+                                    <div className='grid grid-cols-2 gap-2'>
 
-                                <div className="space-y-2">
-                                    <Label>Precio</Label>
-                                    <Input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={tempItem.customPrice === null ? '' : tempItem.customPrice}
-                                        onChange={(e) => handleInputChange(e, 'customPrice')}
-                                        disabled={!tempItem.itemId}
-                                    />
+                                        <div className="space-y-2">
+                                            <Label>Vendidos</Label>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                step="1"
+                                                value={tempItem.sold ?? ''}
+                                                onChange={(e) => handleInputChange(e, 'sold')}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>Devueltos</Label>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                step="1"
+                                                value={tempItem.returned ?? ''}
+                                                onChange={(e) => handleInputChange(e, 'returned')}
+                                            />
+                                        </div>
+
+                                    </div>
+                                    {(() => {
+                                        const selectedProduct = products.find(p => p.id === tempItem.itemId)!;
+                                        return (
+                                            <>
+                                                <div className='grid grid-cols-2 gap-2'>
+
+                                                    <div className="space-y-2">
+                                                        <Label>Precio Unitario (S/)</Label>
+                                                        <Input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.01"
+                                                            value={
+                                                                tempItem.negotiatedPrice !== undefined
+                                                                    ? tempItem.negotiatedPrice
+                                                                    : selectedProduct.basePrice
+                                                            }
+                                                            onChange={(e) => handleInputChange(e, 'negotiatedPrice')}
+                                                            disabled={!selectedProduct.allowPriceNegotiation}
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label>Precio Cilindro (S/)</Label>
+                                                        <Input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.01"
+                                                            value={
+                                                                tempItem.negotiatedCylinderPrice !== undefined
+                                                                    ? tempItem.negotiatedCylinderPrice
+                                                                    : selectedProduct.emptyCylinderPrice
+                                                            }
+                                                            onChange={(e) => handleInputChange(e, 'negotiatedCylinderPrice')}
+                                                            disabled={!selectedProduct.allowCylinderNegotiation}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
-                            </div>
+                            )}
 
                             <Button
                                 className="w-full mt-4"
                                 onClick={addItemToOrder}
-                                disabled={!tempItem.itemId || (tempItem.sold === 0 && tempItem.returned === 0) || tempItem.customPrice === null}
+                                disabled={!tempItem.itemId || (tempItem.sold === 0 && tempItem.returned === 0)}
                             >
                                 Agregar
                             </Button>

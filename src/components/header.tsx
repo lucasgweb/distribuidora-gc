@@ -34,7 +34,7 @@ export function Header({ title, onBack, closeIcon }: Props) {
                     <Sheet>
                         <SheetTrigger asChild>
                             <button
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-"
                                 aria-label="Abrir menu"
                             >
                                 <Menu className="w-6 h-6 text-gray-700" />
@@ -46,7 +46,7 @@ export function Header({ title, onBack, closeIcon }: Props) {
                                 {/* Cabeçalho do sidebar */}
                                 <div className="flex items-center justify-between mb-8">
                                     <h2 className="text-xl font-bold text-gray-800">Menu</h2>
-                                    <SheetClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                    <SheetClose >
 
                                         <span className="sr-only">Fechar menu</span>
                                     </SheetClose>

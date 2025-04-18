@@ -12,7 +12,7 @@ export interface CreateSaleItemDTO {
 
 export interface CreateSaleDTO {
   clientId: string;
-  paymentMethod: 'efectivo' | 'yape';
+ paymentMethod: 'CASH' | 'YAPE';
   items: CreateSaleItemDTO[];
 }
 
@@ -29,7 +29,7 @@ export interface SaleDTO {
   updatedAt: Date;
 }
 
-interface SaleItemDTO {
+export interface SaleItemDTO {
   id: string;
   product: ProductDTO;
   soldQuantity: number;

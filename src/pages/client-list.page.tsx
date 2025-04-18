@@ -1,77 +1,113 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { ClientDTO } from '../dtos/client.dto';
 import { Card, CardContent } from '../components/ui/card';
+import { listClients } from '../services/clients.service';
+import { FullScreenLoader } from '../components/full-screen-loader';
+
+const PAGE_SIZE = 10;
 
 export function ClientListPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
+    const [clients, setClients] = useState<ClientDTO[]>([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loading, setLoading] = useState(false);
 
-    const mockClients: ClientDTO[] = [
-        {
-            id: '1',
-            name: 'Juan Valdez',
-            dni: '70123456',
-            phone: '999888777',
-            email: 'juan@email.com',
-            address: 'Av. Principal 123',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        },
-        {
-            id: '2',
-            name: 'Jenifer',
-            dni: '20654328765',
-            phone: '011234567',
-            email: 'contacto@empresa.com',
-            address: 'Calle 1',
-            createdAt: new Date(),
-            updatedAt: new Date(),
+    const observerRef = useRef<HTMLDivElement | null>(null);
+
+    const loadClients = useCallback(async () => {
+        if (loading || !hasMore) return; // Evita chamadas desnecessárias
+
+        setLoading(true);
+        try {
+            const data = await listClients({
+                name: search || undefined,
+                dni: search || undefined,
+                page,
+                pageSize: PAGE_SIZE,
+            });
+
+            // Atualiza a lista de clientes evitando duplicatas
+            setClients(prev => {
+                const existingIds = new Set(prev.map(c => c.id));
+                const newClients = data.clients.filter(c => !existingIds.has(c.id));
+                return [...prev, ...newClients];
+            });
+
+            // Define hasMore corretamente: só true se a página cheia foi retornada
+            setHasMore(data.clients.length === PAGE_SIZE);
+
+            // Log para depuração (opcional)
+            // console.log(`Página ${page}: ${data.clients.length} clientes recebidos, hasMore: ${data.clients.length === PAGE_SIZE}`);
+        } catch (error) {
+            console.error('Erro ao carregar clientes:', error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    }, [search, page, loading, hasMore]);
 
-    const filtered = mockClients.filter(client =>
-        client.name.toLowerCase().includes(search.toLowerCase()) ||
-        client.dni.includes(search)
-    );
+    // Reseta a lista quando a busca muda
+    useEffect(() => {
+        setClients([]);
+        setPage(1);
+        setHasMore(true);
+        // Carrega a primeira página imediatamente após o reset
+        loadClients();
+    }, [search]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleDelete = (_id: string) => {
-        if (window.confirm('¿Seguro que deseas eliminar este cliente?')) {
-            // Lógica para eliminar
+    // Carrega os clientes apenas quando a página muda (exceto no reset da busca)
+    useEffect(() => {
+        if (page !== 1) {
+            loadClients();
         }
-    };
+    }, [page, loadClients]);
+
+    // Configura o IntersectionObserver para scroll infinito
+    useEffect(() => {
+        const observer = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore && !loading) {
+                // Log para depuração (opcional)
+                // console.log(`Observer disparado - Tentando carregar página ${page + 1}, hasMore: ${hasMore}, loading: ${loading}`);
+                setPage(prev => prev + 1);
+            }
+        }, { threshold: 0.1 }); // Ajusta o threshold para garantir que só dispare quando o elemento estiver visível
+
+        const current = observerRef.current;
+        if (current) observer.observe(current);
+
+        return () => {
+            if (current) observer.unobserve(current);
+        };
+    }, [hasMore, loading]);
 
     return (
-        <div className="flex px-4 flex-col min-h-screen ">
-            <Header title="Clientes" />
+        <div className="flex px-4 flex-col min-h-screen">
+            <Header title="Clientes" onBack={() => navigate('/')} />
+
             <div className="pt-4 pb-4 max-w-3xl mx-auto w-full">
-                <div className="flex items-center  justify-between gap-2">
-
-
-                    <div className=" flex flex-1 relative">
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-1 relative">
                         <Input
                             placeholder="Buscar clientes..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
                     </div>
-                    <Button
-                        onClick={() => navigate('/clients/new')}
-                    >
+
+                    <Button onClick={() => navigate('/clients/new')}>
                         <Plus className="w-4 h-4 mr-2" />
                         Nuevo
                     </Button>
                 </div>
 
-
-
                 <div className="mt-4 space-y-2">
-                    {filtered.map(client => (
+                    {clients.map(client => (
                         <Card
                             key={client.id}
                             className="cursor-pointer"
@@ -97,23 +133,12 @@ export function ClientListPage() {
                                         )}
                                     </div>
                                 </div>
-
-                                <div className="flex gap-1 ml-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-gray-500"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDelete(client.id!);
-                                        }}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </div>
                             </CardContent>
                         </Card>
                     ))}
+
+                    {loading && page === 1 && <FullScreenLoader />}
+                    <div ref={observerRef} className="h-6" />
                 </div>
             </div>
         </div>
