@@ -9,13 +9,13 @@ import {
     CommandItem,
 } from "../components/ui/command";
 import { Badge } from "../components/ui/badge";
-import { Client } from "../dtos/client.dto";
+import { ClientDTO } from "../dtos/client.dto";
 
 
 interface ClientSearchProps {
-    clients: Client[];
-    selectedClient?: Client;
-    onSelect: (client: Client) => void;
+    clients: ClientDTO[];
+    selectedClient?: ClientDTO;
+    onSelect: (client: ClientDTO) => void;
     searchQuery: string;
     setSearchQuery: (value: string) => void;
     isLoading: boolean;

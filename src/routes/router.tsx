@@ -10,6 +10,10 @@ import { DriversListPage } from "../pages/drivers-list.page";
 import { RegisterDriverPage } from "../pages/register-driver.page";
 import { InventoryListPage } from "../pages/inventory.list.page";
 import { InventoryMovementPage } from "../pages/inventory.movement.page";
+import { ProductListPage } from "../pages/product-list.page";
+import { ProductDetailsPage } from "../pages/product-details.page";
+import { ClientListPage } from "../pages/client-list.page";
+import { ClientFormPage } from "../pages/client-form.page";
 export const router = createBrowserRouter([
     {
         path: "/",
@@ -47,6 +51,30 @@ export const router = createBrowserRouter([
             {
                 path: "/inventory-movement",
                 element: <InventoryMovementPage />
+            },
+            {
+                path: "/products",
+                element: <ProductListPage />
+            },
+            {
+                path: "/products/:id",
+                element: <ProductDetailsPage />
+            },
+            {
+                path: "/products/new",
+                element: <ProductDetailsPage />
+            },
+            {
+                path: "/clients",
+                element: <ClientListPage />
+            },
+            {
+                path: "/clients/:id",
+                element: <ClientFormPage />
+            },
+            {
+                path: "/clients/new",
+                element: <ClientFormPage />
             },
         ]
     },

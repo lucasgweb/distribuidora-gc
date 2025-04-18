@@ -1,14 +1,14 @@
 import { createStore } from 'zustand/vanilla';
 import { persist } from 'zustand/middleware';
-import { UserDto } from '../dtos/user.dto';
+import { UserDTO } from '../dtos/user.dto';
 
 export type AuthStore = {
-  user: UserDto | null;
+  user: UserDTO | null;
   token: string | null;
   actions: {
 
     setToken: (token: string) => void;
-    setUser: (user: UserDto) => void;
+    setUser: (user: UserDTO) => void;
     clear: () => void;
   };
 };

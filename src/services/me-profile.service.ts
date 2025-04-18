@@ -1,8 +1,8 @@
-import { UserDto } from "../dtos/user.dto";
+import { UserDTO } from "../dtos/user.dto";
 import { api } from "../lib/api";
 
 type Response = {
-    user: UserDto;
+    user: UserDTO;
 };
 
 export async function profileService(): Promise<Response> {

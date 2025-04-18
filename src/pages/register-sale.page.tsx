@@ -14,7 +14,7 @@ import { Label } from "../components/ui/label";
 import MoneySVG from '../assets/money.svg';
 import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
-import { Client } from '../dtos/client.dto';
+import { ClientDTO } from '../dtos/client.dto';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import { X, Plus, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 
@@ -22,7 +22,7 @@ interface Item {
     id: number;
     name: string;
     price_full: number;
-    deposit: number;
+    cilinder: number;
 }
 
 interface OrderItem {
@@ -33,16 +33,16 @@ interface OrderItem {
 }
 
 const initialItems: Item[] = [
-    { id: 1, name: 'DELTA 5', price_full: 150, deposit: 100 },
-    { id: 2, name: 'DELTA 10', price_full: 200, deposit: 120 },
-    { id: 3, name: 'SOL 45', price_full: 250, deposit: 150 },
+    { id: 1, name: 'DELTA 5', price_full: 150, cilinder: 100 },
+    { id: 2, name: 'DELTA 10', price_full: 200, cilinder: 120 },
+    { id: 3, name: 'SOL 45', price_full: 250, cilinder: 150 },
 ];
 
 export function RegisterSalePage() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
-    const [clients, setClients] = useState<Client[]>([]);
-    const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+    const [clients, setClients] = useState<ClientDTO[]>([]);
+    const [selectedClient, setSelectedClient] = useState<ClientDTO | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<'efectivo' | 'yape'>('efectivo');
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -58,10 +58,22 @@ export function RegisterSalePage() {
         try {
             setIsLoading(true);
             await new Promise(resolve => setTimeout(resolve, 1000));
-            const mockData: Client[] = [
-                { id: '1', name: 'Cliente A', email: 'clientea@email.com', phone: '' },
-                { id: '2', name: 'Cliente B', phone: '(11) 99999-9999', email: '' },
-                { id: '3', name: 'Cliente C', email: 'clientec@email.com', phone: '' },
+            const mockData: ClientDTO[] = [
+                {
+                    id: '1', name: 'Cliente A', email: 'clientea@email.com', phone: '', dni: '', address: '',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    id: '2', name: 'Cliente B', phone: '(11) 99999-9999', email: '', dni: '', address: '',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    id: '3', name: 'Cliente C', email: 'clientec@email.com', phone: '', dni: '', address: '',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
             ];
             setClients(mockData.filter(client =>
                 client.name.toLowerCase().includes(query.toLowerCase())
@@ -123,7 +135,7 @@ export function RegisterSalePage() {
     const calculateTotal = () => {
         return orderItems.reduce((total, { sold, returned, item, customPrice }) => {
             const actualPrice = customPrice !== undefined ? customPrice : item.price_full;
-            return total + (sold * actualPrice - returned * item.deposit);
+            return total + (sold * actualPrice - returned * item.cilinder);
         }, 0);
     };
 
@@ -214,7 +226,7 @@ export function RegisterSalePage() {
                                                 <span className="text-sm font-medium min-w-[70px] text-right">
                                                     ${(
                                                         (orderItem.customPrice ?? orderItem.item.price_full) * orderItem.sold -
-                                                        orderItem.returned * orderItem.item.deposit
+                                                        orderItem.returned * orderItem.item.cilinder
                                                     ).toFixed(2)}
                                                 </span>
 

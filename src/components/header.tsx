@@ -1,5 +1,6 @@
-import { ArrowLeft, Menu, X } from "lucide-react"
+import { ArrowLeft, ChartArea, Menu, Package, Settings, User, X } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet"
+import { Link } from "react-router-dom"
 
 type Props = {
     title: string
@@ -53,34 +54,34 @@ export function Header({ title, onBack, closeIcon }: Props) {
 
                                 {/* Itens do menu */}
                                 <nav className="flex flex-col gap-2">
-                                    <a
-                                        href="#"
+                                    <Link
+                                        to="/clients"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
                                     >
-                                        <span>👤</span>
+                                        <span><User /></span>
                                         Clientes
-                                    </a>
-                                    <a
-                                        href="#"
+                                    </Link>
+                                    <Link
+                                        to="/products"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
                                     >
-                                        <span>📦</span>
+                                        <span><Package></Package></span>
                                         Produtos
-                                    </a>
-                                    <a
-                                        href="#"
+                                    </Link>
+                                    <Link
+                                        to="#"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
                                     >
-                                        <span>📊</span>
+                                        <span><ChartArea /></span>
                                         Relatórios
-                                    </a>
-                                    <a
-                                        href="#"
+                                    </Link>
+                                    <Link
+                                        to="#"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
                                     >
-                                        <span>⚙️</span>
+                                        <span><Settings /></span>
                                         Configurações
-                                    </a>
+                                    </Link>
                                 </nav>
                             </div>
                         </SheetContent>
