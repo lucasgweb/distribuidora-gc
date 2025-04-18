@@ -148,6 +148,8 @@ export function RegisterSalePage() {
                     {/* Sección Principal */}
                     <div className="space-y-4">
                         <div className="grid gap-4">
+
+                            <h2 className="text-md font-semibold">Información principal</h2>
                             <div className="space-y-2">
                                 <Label>Cliente</Label>
                                 <ClientSearch
@@ -165,7 +167,7 @@ export function RegisterSalePage() {
                     {/* Sección de Pedido */}
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-md font-semibold">Detalle del Pedido</h2>
+                            <h2 className="text-md font-semibold">Información venta</h2>
                             <Button size="sm" onClick={openAddItemModal}>
                                 <Plus className="w-4 h-4 mr-2" />
                                 Agregar Item
@@ -296,7 +298,7 @@ export function RegisterSalePage() {
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center z-50">
                     <div className="w-full max-w-md bg-background rounded-t-2xl md:rounded-xl p-6 animate-in slide-in-from-bottom md:zoom-in-95">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-semibold">Agregar Producto</h3>
+                            <h3 className="text-lg font-semibold">Agregar Item</h3>
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -308,7 +310,7 @@ export function RegisterSalePage() {
 
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Producto</Label>
+                                <Label>Marca</Label>
                                 <Select
                                     value={tempItem.itemId?.toString() || ""}
                                     onValueChange={value => setTempItem(prev => ({
@@ -318,7 +320,7 @@ export function RegisterSalePage() {
                                     }))}
                                 >
                                     <SelectTrigger className='w-full'>
-                                        <SelectValue placeholder="Seleccionar producto" />
+                                        <SelectValue placeholder="Seleccionar marca" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {initialItems.map(item => (
@@ -369,7 +371,7 @@ export function RegisterSalePage() {
                                 onClick={addItemToOrder}
                                 disabled={!tempItem.itemId || (tempItem.sold === 0 && tempItem.returned === 0) || tempItem.customPrice === null}
                             >
-                                Agregar al Pedido
+                                Agregar
                             </Button>
                         </div>
                     </div>
