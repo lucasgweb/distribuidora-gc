@@ -389,8 +389,8 @@ export function SaleDetail() {
 
                     {/* Resumen Financiero */}
                     <div className="border-t pt-6">
-                        <div className="max-w-xs ml-auto space-y-3">
-                            <div className="flex justify-between font-semibold">
+                        <div className="space-y-3">
+                            <div className="flex justify-between text-xl font-semibold">
                                 <span>Total:</span>
                                 <span>{formatCurrency(sale.totalAmount)}</span>
                             </div>
