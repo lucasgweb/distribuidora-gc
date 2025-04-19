@@ -115,7 +115,7 @@ export function ClientListPage() {
                         >
                             <CardContent className="flex justify-between items-start">
                                 <div className="flex-1">
-                                    <h3 className="font-medium">{client.name}</h3>
+                                    <h3 className="font-medium text-xl">{client.name}</h3>
                                     <div className="mt-2 text-sm space-y-1">
                                         <div className="flex items-center gap-2">
                                             <span className="text-gray-500">DNI/RUC:</span>
@@ -125,12 +125,6 @@ export function ClientListPage() {
                                             <span className="text-gray-500">Teléfono:</span>
                                             <span>{client.phone}</span>
                                         </div>
-                                        {client.email && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-gray-500">Email:</span>
-                                                <span className="text-blue-600">{client.email}</span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </CardContent>

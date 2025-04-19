@@ -4,7 +4,6 @@ import { PrivateRoute } from "./private-route";
 import { LoginPage } from "../pages/login.page";
 import { HomePage } from "../pages/home.page";
 import { RegisterMenuPage } from "../pages/register-menu.page";
-import { SaleDetail } from "../pages/sale-detail.page";
 import { RegisterSalePage } from "../pages/register-sale.page";
 import { DriversListPage } from "../pages/drivers-list.page";
 import { RegisterDriverPage } from "../pages/register-driver.page";
@@ -14,6 +13,9 @@ import { ProductListPage } from "../pages/product-list.page";
 import { ProductDetailsPage } from "../pages/product-details.page";
 import { ClientListPage } from "../pages/client-list.page";
 import { ClientFormPage } from "../pages/client-form.page";
+import { SalesListPage } from "../pages/sales-list.page";
+import { SaleFinished } from "../pages/sale-finished.page";
+import { SaleDetail } from "../pages/sale-detail.page";
 export const router = createBrowserRouter([
     {
         path: "/",
@@ -31,6 +33,10 @@ export const router = createBrowserRouter([
             {
                 path: "/register-sale",
                 element: <RegisterSalePage />
+            },
+            {
+                path: "/sale-finished/:id",
+                element: <SaleFinished />
             },
             {
                 path: "/sale-detail/:id",
@@ -75,6 +81,10 @@ export const router = createBrowserRouter([
             {
                 path: "/clients/new",
                 element: <ClientFormPage />
+            },
+            {
+                path: "/sales-list",
+                element: <SalesListPage />
             },
         ]
     },

@@ -11,6 +11,7 @@ import {
     updateProduct,
 } from '../services/products.service';
 import { FullScreenLoader } from '../components/full-screen-loader';
+import { Loader2 } from 'lucide-react';
 
 type EditableProduct = {
     name: string;
@@ -22,6 +23,7 @@ type EditableProduct = {
 
 export function ProductDetailsPage() {
     const { id } = useParams();
+    const [isSavingProduct, setIsSavingProduct] = useState(false)
     const navigate = useNavigate();
     const isNew = !id || id === 'new';
 
@@ -72,6 +74,8 @@ export function ProductDetailsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        setIsSavingProduct(true)
+
         try {
             const basePrice = parseFloat(product.basePrice || '0');
             const emptyCylinderPrice = parseFloat(product.emptyCylinderPrice || '0');
@@ -97,6 +101,8 @@ export function ProductDetailsPage() {
         } catch (error) {
             console.error('Error al guardar producto:', error);
             alert('Ocurrió un error al guardar el producto.');
+        } finally {
+            setIsSavingProduct(false)
         }
     };
 
@@ -168,15 +174,15 @@ export function ProductDetailsPage() {
                                             allowPriceNegotiation: value === 'true',
                                         })
                                     }
-                                    className="flex gap-4"
+                                    className="flex gap-4s"
                                 >
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 justify-baseline">
                                         <RadioGroupItem value="true" id="price-yes" />
-                                        <Label htmlFor="price-yes">Sí</Label>
+                                        <Label htmlFor="price-yes" className='mt-3'>Sí</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <RadioGroupItem value="false" id="price-no" />
-                                        <Label htmlFor="price-no">No</Label>
+                                        <Label htmlFor="price-no" className='mt-3'>No</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
@@ -195,11 +201,11 @@ export function ProductDetailsPage() {
                                 >
                                     <div className="flex items-center gap-2">
                                         <RadioGroupItem value="true" id="cylinder-yes" />
-                                        <Label htmlFor="cylinder-yes">Sí</Label>
+                                        <Label htmlFor="cylinder-yes" className='mt-3'>Sí</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <RadioGroupItem value="false" id="cylinder-no" />
-                                        <Label htmlFor="cylinder-no">No</Label>
+                                        <Label htmlFor="cylinder-no" className='mt-3'>No</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
@@ -207,6 +213,7 @@ export function ProductDetailsPage() {
 
                         <div className="flex gap-2 mt-6">
                             <Button
+                                disabled={isSavingProduct}
                                 type="button"
                                 variant="outline"
                                 className="flex-1"
@@ -214,7 +221,8 @@ export function ProductDetailsPage() {
                             >
                                 Cancelar
                             </Button>
-                            <Button type="submit" className="flex-1">
+                            <Button type="submit" className="flex-1" disabled={isSavingProduct}>
+                                {isSavingProduct && (<Loader2 className='animate-spin' />)}
                                 {isNew ? 'Crear Producto' : 'Guardar Cambios'}
                             </Button>
                         </div>

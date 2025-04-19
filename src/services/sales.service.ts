@@ -8,8 +8,15 @@ const BASE_URL = '/sales'
 export interface ListSalesParams {
   page?: number
   pageSize?: number
+  query?: string
 }
 
+export async function listSales(
+  params: ListSalesParams = {}
+): Promise<ListSalesResponse> {
+  const response = await api.get<ListSalesResponse>(BASE_URL, { params })
+  return response.data
+}
 export interface ListSalesResponse {
   sales: SaleDTO[]
   total: number
@@ -29,9 +36,3 @@ export async function getSale(id: string): Promise<SaleDTO> {
   return response.data
 }
 
-export async function listSales(
-  params: ListSalesParams = {}
-): Promise<ListSalesResponse> {
-  const response = await api.get<ListSalesResponse>(BASE_URL, { params })
-  return response.data
-}

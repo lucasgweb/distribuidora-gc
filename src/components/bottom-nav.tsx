@@ -1,4 +1,4 @@
-import { Home, PieChart, Settings, Users, Plus } from "lucide-react";
+import { Home, PieChart, Settings, Plus, NotepadText } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export function BottomNav() {
@@ -9,7 +9,7 @@ export function BottomNav() {
 
     const navItems = [
         { route: "/", icon: Home, label: "Inicio" },
-        { route: "/drivers", icon: Users, label: "Choferes" },
+        { route: "/sales-list", icon: NotepadText, label: "Ventas" },
         { type: "action" as const, icon: Plus },
         { route: "/reports", icon: PieChart, label: "Reportes" },
         { route: "/settings", icon: Settings, label: "Ajustes" },
@@ -24,7 +24,7 @@ export function BottomNav() {
                             <button
                                 onClick={() => navigate('register-menu')}
                                 key={index}
-                                className="bg-primary m-auto text-white p-2 rounded-full justify-center items-center align-middle flex h-14 w-14 shadow-lg hover:bg-primary/90 transition-colors"
+                                className="bg-primary m-auto text-white p-2 rounded-full justify-center items-center align-middle flex h-13 w-13 shadow-lg hover:bg-primary/90 transition-colors"
                             >
                                 <Plus className="w-6 h-6" />
                             </button>

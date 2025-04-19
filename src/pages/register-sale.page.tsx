@@ -22,6 +22,7 @@ import { listProducts } from '../services/products.service';
 import { ProductDTO } from '../dtos/product.dto';
 import { CreateSaleDTO, CreateSaleItemDTO } from '../dtos/sale.dto';
 import { createSale } from '../services/sales.service';
+import { toast } from 'sonner';
 
 interface OrderItem {
     item: ProductDTO;
@@ -67,9 +68,8 @@ export function RegisterSalePage() {
     }, []);
 
     const searchClients = async (query: string) => {
-        console.log(query)
+
         try {
-            setIsLoadingClients(true);
             const response = await listClients({ name: query });
             setClients(response.clients);
         } catch (error) {
@@ -80,11 +80,14 @@ export function RegisterSalePage() {
     };
 
     useEffect(() => {
+        setIsLoadingClients(true);
         const handler = setTimeout(() => {
-            if (searchQuery.length > 2) {
+            if (searchQuery.length > 0) {
                 searchClients(searchQuery);
+            } else {
+                setClients([]);
             }
-        }, 500);
+        }, 200);
 
         return () => clearTimeout(handler);
     }, [searchQuery]);
@@ -122,10 +125,10 @@ export function RegisterSalePage() {
             return total + (sold * price - returned * cylinderPrice);
         }, 0);
     };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'sold' | 'returned' | 'negotiatedPrice' | 'negotiatedCylinderPrice') => {
         const value = e.target.value;
 
-        // Permite campo vazio temporariamente
         if (value === '') {
             setTempItem(prev => ({ ...prev, [field]: undefined }));
             return;
@@ -138,9 +141,17 @@ export function RegisterSalePage() {
     };
 
     const handleSubmitSale = async () => {
+        if (!selectedClient) {
+            toast.info("Selecione um cliente antes de registrar a venda!");
+            return;
+        }
+
+        if (orderItems.length === 0) {
+            toast.info("Adicione itens à venda antes de registrar!");
+            return;
+        }
 
         setIsSubmitingSale(true);
-        if (!selectedClient || orderItems.length === 0) return;
 
         const saleData: CreateSaleDTO = {
             clientId: selectedClient.id,
@@ -156,11 +167,12 @@ export function RegisterSalePage() {
 
         try {
             const response = await createSale(saleData);
-            setIsSubmitingSale(false)
-            navigate(`/sale-detail/${response.saleId}`);
+            navigate(`/sale-finished/${response.saleId}`);
         } catch (error) {
             console.error("Erro ao registrar venda:", error);
-            alert("Erro ao registrar venda");
+            toast.error("Erro ao registrar venda");
+        } finally {
+            setIsSubmitingSale(false);
         }
     };
 
@@ -170,7 +182,6 @@ export function RegisterSalePage() {
                 <Header title="Registrar Venta" onBack={() => navigate('/')} />
 
                 <div className="space-y-6">
-                    {/* Seção Principal */}
                     <div className="space-y-4">
                         <div className="grid gap-4">
                             <h2 className="text-md font-semibold">Informação principal</h2>
@@ -188,7 +199,6 @@ export function RegisterSalePage() {
                         </div>
                     </div>
 
-                    {/* Seção de Pedido */}
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <h2 className="text-md font-semibold">Informação venta</h2>
@@ -258,7 +268,6 @@ export function RegisterSalePage() {
                         )}
                     </div>
 
-                    {/* Seção de Pagamento */}
                     <div className="space-y-3">
                         <h2 className="text-md font-semibold">Medio de pago</h2>
                         <RadioGroup
@@ -295,12 +304,10 @@ export function RegisterSalePage() {
                     <Button
                         className="w-full"
                         onClick={handleSubmitSale}
-                        disabled={!orderItems.length || !selectedClient}
                     >
-                        {isSubmitingSale && (
+                        {isSubmitingSale ? (
                             <Loader2 className='h-6 w-6 animate-spin text-white' />
-                        )}
-                        Registrar Venta
+                        ) : 'Registrar Venta'}
                     </Button>
                 </div>
             </div>
@@ -349,9 +356,7 @@ export function RegisterSalePage() {
 
                             {tempItem.itemId && (
                                 <div className="flex flex-col gap-4">
-
                                     <div className='grid grid-cols-2 gap-2'>
-
                                         <div className="space-y-2">
                                             <Label>Vendidos</Label>
                                             <Input
@@ -373,14 +378,12 @@ export function RegisterSalePage() {
                                                 onChange={(e) => handleInputChange(e, 'returned')}
                                             />
                                         </div>
-
                                     </div>
                                     {(() => {
                                         const selectedProduct = products.find(p => p.id === tempItem.itemId)!;
                                         return (
                                             <>
                                                 <div className='grid grid-cols-2 gap-2'>
-
                                                     <div className="space-y-2">
                                                         <Label>Precio Unitario (S/)</Label>
                                                         <Input

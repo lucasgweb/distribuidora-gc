@@ -10,6 +10,7 @@ import {
 } from "../components/ui/command";
 import { Badge } from "../components/ui/badge";
 import { ClientDTO } from "../dtos/client.dto";
+import { Loader2 } from "lucide-react";
 
 
 interface ClientSearchProps {
@@ -62,7 +63,7 @@ export function ClientSearch({ clients, selectedClient, onSelect, searchQuery, s
                         {isOpen && (
                             <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-xl shadow-lg">
                                 {isLoading ? (
-                                    <div className="p-4 text-center">Cargando...</div>
+                                    <div className="p-4 text-center flex flex-1 justify-center"><Loader2 className="animate-spin text-primary" /></div>
                                 ) : (
                                     <Command shouldFilter={false}>
                                         <CommandGroup className="max-h-60 overflow-y-auto">
@@ -97,7 +98,7 @@ export function ClientSearch({ clients, selectedClient, onSelect, searchQuery, s
 
 
                                         <CommandEmpty className="py-2 px-4 text-sm">
-                                            {searchQuery ? "Nenhum cliente encontrado" : "Digite para buscar..."}
+                                            {searchQuery ? "No se encontraron clientes" : "Escriba para buscar..."}
                                         </CommandEmpty>
                                     </Command>
                                 )}

@@ -18,6 +18,7 @@ export interface CreateSaleDTO {
 
 export interface SaleDTO {
   id: string;
+  code: number;
   client: ClientDTO;
   user: UserDTO;
   items: SaleItemDTO[];
