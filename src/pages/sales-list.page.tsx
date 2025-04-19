@@ -89,7 +89,7 @@ export function SalesListPage() {
     };
 
     return (
-        <div className="flex px-4 flex-col min-h-screen bg-gray-50">
+        <div className="flex px-4 flex-col min-h-screen ">
             <Header title="Ventas" onBack={() => navigate('/')} />
 
             <div className="pt-4 pb-4 max-w-3xl mx-auto w-full">
@@ -109,7 +109,7 @@ export function SalesListPage() {
                     {sales.map(sale => (
                         <Card
                             key={sale.id}
-                            className="cursor-pointer hover:bg-white transition-colors border-0 p-1 shadow-sm hover:shadow overflow-hidden bg-white"
+                            className="cursor-pointer hover:bg-white transition-colors p-1 hover:shadow overflow-hidden bg-white"
                             onClick={() => navigate(`/sale-detail/${sale.id}`)}
                         >
                             <CardContent className="p-0">
