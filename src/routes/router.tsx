@@ -39,10 +39,6 @@ export const router = createBrowserRouter([
                 element: <SaleFinished />
             },
             {
-                path: "/sale-detail/:id",
-                element: <SaleDetail />
-            },
-            {
                 path: "/drivers",
                 element: <DriversListPage />
             },
@@ -96,5 +92,10 @@ export const router = createBrowserRouter([
             element: <LoginPage />
         },
         ]
-    }
+    },
+
+    {
+        path: "/sale-detail/:id",
+        element: <SaleDetail />
+    },
 ]);

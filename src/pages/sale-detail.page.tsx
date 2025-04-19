@@ -2,9 +2,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "../components/header";
-import { Printer, Share2, Clipboard, FileDown } from "lucide-react";
+import { Printer, Share2, FileDown } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
 import { SaleDTO } from "../dtos/sale.dto";
 import { getSale } from "../services/sales.service";
 import { FullScreenLoader } from "../components/full-screen-loader";
@@ -101,7 +100,7 @@ export function SaleDetail() {
             // Add title
             pdf.setFontSize(titleFontSize);
             pdf.setFont('helvetica', 'bold');
-            pdf.text(`Comprobante de Venta #${sale.code}`, margin, yPos);
+            pdf.text(`Venta #${sale.code}`, margin, yPos);
             yPos += 8;
 
             // Add date
@@ -137,9 +136,9 @@ export function SaleDetail() {
             pdf.text(`Chofer: ${sale.user.name}`, margin, yPos);
             yPos += 5;
             pdf.text(`Método de Pago: ${getPaymentMethodLabel(sale.paymentMethod)}`, margin, yPos);
-            yPos += 5;
-            const paymentStatus = sale.debt > 0 ? `DEUDA ${formatCurrency(sale.debt)}` : "PAGADO";
-            pdf.text(`Estado de Pago: ${paymentStatus}`, margin, yPos);
+            /*             const paymentStatus = sale.debt > 0 ? `DEUDA ${formatCurrency(sale.debt)}` : "PAGADO";
+                        pdf.text(`Estado de Pago: ${paymentStatus}`, margin, yPos);
+                        */
             yPos += 12;
 
             // Products title
@@ -200,6 +199,7 @@ export function SaleDetail() {
             yPos += 10;
 
             pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(16);
             pdf.text("Total:", pageWidth - margin - 50, yPos);
             pdf.text(formatCurrency(sale.totalAmount), pageWidth - margin, yPos, { align: 'right' });
             yPos += 15;
@@ -215,7 +215,7 @@ export function SaleDetail() {
             pdf.text(legalNote, textX, yPos);
 
             // Save the PDF
-            pdf.save(`comprobante-venta-${sale.code}.pdf`);
+            pdf.save(`venta-${sale.code}.pdf`);
 
             toast("El comprobante ha sido descargado correctamente");
         } catch (err) {
@@ -252,18 +252,18 @@ export function SaleDetail() {
     if (!sale) return <div className="p-4 text-center">Venta no encontrada</div>;
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50">
-            <div className="max-w-4xl mx-auto w-full flex-1 px-4 print:px-0">
-                <div className="print:hidden">
-                    <Header
-                        title="Comprobante de Venta"
-                        onBack={() => navigate("/sales-list")}
-                    />
-                </div>
+        <div className="flex  px-4 flex-col min-h-screen ">
+            <div className="print:hidden">
+                <Header
+                    title="Comprobante de Venta"
+                    onBack={() => navigate("/sales-list")}
+                />
+            </div>
+            <div className="max-w-4xl mx-auto w-full flex-1  print:px-0">
 
                 <div
                     ref={receiptRef}
-                    className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mt-4 border border-gray-100 print:shadow-none print:border-none print:mt-0"
+                    className="bg-white rounded-xl  mt-4 border-gray-100 print:shadow-none print:border-none print:mt-0"
                 >
                     {/* Encabezado */}
                     <div className="flex flex-col sm:flex-row justify-between sm:items-start mb-6 gap-4">
@@ -321,11 +321,9 @@ export function SaleDetail() {
                                 </p>
                                 <p>
                                     <span className="text-gray-500">Método de Pago:</span>{" "}
-                                    <Badge variant="outline" className="capitalize p-2">
-                                        {getPaymentMethodLabel(sale.paymentMethod)}
-                                    </Badge>
+                                    {getPaymentMethodLabel(sale.paymentMethod)}
                                 </p>
-                                <p>
+                                {/*  <p>
                                     <span className="text-gray-500">Estado de Pago:</span>{" "}
                                     <Badge
                                         variant={sale.debt > 0 ? "destructive" : "default"}
@@ -333,7 +331,7 @@ export function SaleDetail() {
                                     >
                                         {sale.debt > 0 ? `DEUDA ${formatCurrency(sale.debt)}` : "PAGADO"}
                                     </Badge>
-                                </p>
+                                </p> */}
                             </div>
                         </div>
                     </div>
@@ -403,19 +401,6 @@ export function SaleDetail() {
 
                 </div>
 
-                <div className="flex justify-center gap-4 mt-8 pb-8 flex-wrap print:hidden">
-                    <Button
-                        variant="outline"
-                        onClick={() => copyToClipboard(sale.code.toString())}
-                        className="flex items-center gap-2"
-                    >
-                        <Clipboard className="w-4 h-4" />
-                        Copiar Código
-                    </Button>
-                    <Button onClick={() => navigate("/sales")} className="px-8">
-                        Volver a Ventas
-                    </Button>
-                </div>
             </div>
 
             {/* CSS para impresión */}
