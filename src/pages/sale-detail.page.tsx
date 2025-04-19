@@ -387,7 +387,6 @@ export function SaleDetail() {
                         </div>
                     </div>
 
-                    {/* Resumen Financiero */}
                     <div className="border-t pt-6">
                         <div className="space-y-3">
                             <div className="flex justify-between text-xl font-semibold">
@@ -396,14 +395,10 @@ export function SaleDetail() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Nota Legal */}
-
                 </div>
 
             </div>
 
-            {/* CSS para impresión */}
             <style dangerouslySetInnerHTML={{
                 __html: `
                     @media print {

@@ -12,40 +12,42 @@ import {
 } from '../services/products.service';
 import { FullScreenLoader } from '../components/full-screen-loader';
 import { Loader2 } from 'lucide-react';
+import { MoneyInput } from '../components/ui/money-input';
 
 type EditableProduct = {
     name: string;
-    basePrice: string;
-    emptyCylinderPrice: string;
+    basePrice: number;
+    emptyCylinderPrice: number;
     allowPriceNegotiation: boolean;
     allowCylinderNegotiation: boolean;
 };
 
 export function ProductDetailsPage() {
     const { id } = useParams();
-    const [isSavingProduct, setIsSavingProduct] = useState(false)
-    const navigate = useNavigate();
     const isNew = !id || id === 'new';
+    const navigate = useNavigate();
 
     const [product, setProduct] = useState<EditableProduct>({
         name: '',
-        basePrice: '',
-        emptyCylinderPrice: '',
+        basePrice: 0,
+        emptyCylinderPrice: 0,
         allowPriceNegotiation: true,
         allowCylinderNegotiation: true,
     });
 
     const [loading, setLoading] = useState(true);
+    const [isSavingProduct, setIsSavingProduct] = useState(false);
 
+    // Cargar datos si estamos editando
     useEffect(() => {
         if (!isNew && id) {
-            async function fetchProduct() {
+            (async () => {
                 try {
-                    const data = await getProduct(id!);
+                    const data = await getProduct(id);
                     setProduct({
                         name: data.name,
-                        basePrice: data.basePrice.toString().replace(/^0+/, '') || '0',
-                        emptyCylinderPrice: data.emptyCylinderPrice.toString().replace(/^0+/, '') || '0',
+                        basePrice: data.basePrice,
+                        emptyCylinderPrice: data.emptyCylinderPrice,
                         allowPriceNegotiation: data.allowPriceNegotiation,
                         allowCylinderNegotiation: data.allowCylinderNegotiation,
                     });
@@ -54,47 +56,45 @@ export function ProductDetailsPage() {
                 } finally {
                     setLoading(false);
                 }
-            }
-            fetchProduct();
+            })();
         } else {
             setLoading(false);
         }
     }, [id, isNew]);
 
-    const handlePriceChange = (value: string, field: 'basePrice' | 'emptyCylinderPrice') => {
-        // Permite números decimais e valores vazios
-        if (value === '' || /^(\d+\.?\d*|\.\d+)$/.test(value)) {
-            setProduct(prev => ({
-                ...prev,
-                [field]: value.replace(/^0+/, '') || '0'
-            }));
-        }
+    // Handlers para los MoneyInput
+    const handleBasePriceChange = (value: number) => {
+        setProduct(prev => ({ ...prev, basePrice: value }));
+    };
+
+    const handleEmptyCylinderPriceChange = (value: number) => {
+        setProduct(prev => ({ ...prev, emptyCylinderPrice: value }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        setIsSavingProduct(true)
+        setIsSavingProduct(true);
 
         try {
-            const basePrice = parseFloat(product.basePrice || '0');
-            const emptyCylinderPrice = parseFloat(product.emptyCylinderPrice || '0');
-
-            if (isNaN(basePrice) || isNaN(emptyCylinderPrice)) {
-                alert('Por favor ingrese valores numéricos válidos');
+            // Validamos que los precios sean >= 0
+            if (product.basePrice < 0 || product.emptyCylinderPrice < 0) {
+                alert('Por favor ingrese valores de precio válidos (>= 0).');
+                setIsSavingProduct(false);
                 return;
             }
 
-            const productData = {
-                ...product,
-                basePrice,
-                emptyCylinderPrice
+            const payload = {
+                name: product.name,
+                basePrice: product.basePrice,
+                emptyCylinderPrice: product.emptyCylinderPrice,
+                allowPriceNegotiation: product.allowPriceNegotiation,
+                allowCylinderNegotiation: product.allowCylinderNegotiation,
             };
 
             if (isNew) {
-                await createProduct(productData);
-            } else if (id) {
-                await updateProduct({ id, ...productData });
+                await createProduct(payload);
+            } else {
+                await updateProduct({ id: id!, ...payload });
             }
 
             navigate('/products');
@@ -102,7 +102,7 @@ export function ProductDetailsPage() {
             console.error('Error al guardar producto:', error);
             alert('Ocurrió un error al guardar el producto.');
         } finally {
-            setIsSavingProduct(false)
+            setIsSavingProduct(false);
         }
     };
 
@@ -113,34 +113,36 @@ export function ProductDetailsPage() {
     return (
         <div className="flex px-6 flex-col min-h-screen">
             <Header
-                title={isNew ? "Nuevo Producto" : "Editar Producto"}
+                title={isNew ? 'Nuevo Producto' : 'Editar Producto'}
                 onBack={() => navigate('/products')}
             />
+
             <div className="pt-4 pb-4 max-w-2xl mx-auto w-full">
                 <form onSubmit={handleSubmit}>
                     <div className="space-y-4">
+                        {/* Nombre */}
                         <div>
                             <Label>Nombre del Producto</Label>
                             <Input
                                 required
                                 value={product.name}
                                 onChange={e =>
-                                    setProduct({ ...product, name: e.target.value })
+                                    setProduct(prev => ({ ...prev, name: e.target.value }))
                                 }
                             />
                         </div>
 
+                        {/* Precios */}
                         <div className="grid gap-4">
                             <div>
                                 <Label>Precio Base (S/)</Label>
-                                <Input
-                                    type="text"
+                                <MoneyInput
                                     required
                                     value={product.basePrice}
-                                    onChange={e => handlePriceChange(e.target.value, 'basePrice')}
+                                    onValueChange={handleBasePriceChange}
                                     onBlur={() => {
-                                        if (!product.basePrice) {
-                                            setProduct(prev => ({ ...prev, basePrice: '0' }));
+                                        if (product.basePrice < 0) {
+                                            setProduct(prev => ({ ...prev, basePrice: 0 }));
                                         }
                                     }}
                                 />
@@ -148,41 +150,40 @@ export function ProductDetailsPage() {
 
                             <div>
                                 <Label>Precio Balón Vacío (S/)</Label>
-                                <Input
-                                    type="text"
+                                <MoneyInput
                                     required
                                     value={product.emptyCylinderPrice}
-                                    onChange={e => handlePriceChange(e.target.value, 'emptyCylinderPrice')}
+                                    onValueChange={handleEmptyCylinderPriceChange}
                                     onBlur={() => {
-                                        if (!product.emptyCylinderPrice) {
-                                            setProduct(prev => ({ ...prev, emptyCylinderPrice: '0' }));
+                                        if (product.emptyCylinderPrice < 0) {
+                                            setProduct(prev => ({ ...prev, emptyCylinderPrice: 0 }));
                                         }
                                     }}
                                 />
                             </div>
                         </div>
 
-                        {/* Resto do formulário permanece igual */}
+                        {/* Negociaciones */}
                         <div className="space-y-4">
                             <div>
                                 <Label>Permitir negociación de precio</Label>
                                 <RadioGroup
                                     value={String(product.allowPriceNegotiation)}
                                     onValueChange={value =>
-                                        setProduct({
-                                            ...product,
+                                        setProduct(prev => ({
+                                            ...prev,
                                             allowPriceNegotiation: value === 'true',
-                                        })
+                                        }))
                                     }
-                                    className="flex gap-4s"
+                                    className="flex gap-4"
                                 >
-                                    <div className="flex items-center gap-2 justify-baseline">
+                                    <div className="flex items-center gap-2">
                                         <RadioGroupItem value="true" id="price-yes" />
-                                        <Label htmlFor="price-yes" className='mt-3'>Sí</Label>
+                                        <Label htmlFor="price-yes">Sí</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <RadioGroupItem value="false" id="price-no" />
-                                        <Label htmlFor="price-no" className='mt-3'>No</Label>
+                                        <Label htmlFor="price-no">No</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
@@ -192,25 +193,26 @@ export function ProductDetailsPage() {
                                 <RadioGroup
                                     value={String(product.allowCylinderNegotiation)}
                                     onValueChange={value =>
-                                        setProduct({
-                                            ...product,
+                                        setProduct(prev => ({
+                                            ...prev,
                                             allowCylinderNegotiation: value === 'true',
-                                        })
+                                        }))
                                     }
                                     className="flex gap-4"
                                 >
                                     <div className="flex items-center gap-2">
                                         <RadioGroupItem value="true" id="cylinder-yes" />
-                                        <Label htmlFor="cylinder-yes" className='mt-3'>Sí</Label>
+                                        <Label htmlFor="cylinder-yes">Sí</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <RadioGroupItem value="false" id="cylinder-no" />
-                                        <Label htmlFor="cylinder-no" className='mt-3'>No</Label>
+                                        <Label htmlFor="cylinder-no">No</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
                         </div>
 
+                        {/* Botones */}
                         <div className="flex gap-2 mt-6">
                             <Button
                                 disabled={isSavingProduct}
@@ -221,8 +223,12 @@ export function ProductDetailsPage() {
                             >
                                 Cancelar
                             </Button>
-                            <Button type="submit" className="flex-1" disabled={isSavingProduct}>
-                                {isSavingProduct && (<Loader2 className='animate-spin' />)}
+                            <Button
+                                type="submit"
+                                className="flex-1"
+                                disabled={isSavingProduct}
+                            >
+                                {isSavingProduct && <Loader2 className="animate-spin" />}
                                 {isNew ? 'Crear Producto' : 'Guardar Cambios'}
                             </Button>
                         </div>
