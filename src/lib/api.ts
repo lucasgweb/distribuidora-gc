@@ -4,7 +4,7 @@ import { redirect } from 'react-router-dom';
 import { getAuthStore } from '../utils/get-auth-store.util';
 
 export const api = axios.create({
-  //baseURL: "https://localhost:7185/api",
+  //baseURL: "http://localhost:3333",
   baseURL: 'https://distribuidora-gc-api.onrender.com',
 });
 

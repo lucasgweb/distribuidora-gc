@@ -20,6 +20,7 @@ import { GenerateInvitePage } from "../pages/generate-invite.page";
 import { RegisterPage } from "../pages/register.page";
 import { ProfilePage } from "../pages/profile.page";
 import { EditProfilePage } from "../pages/edit-profile.page";
+import { UsersListPage } from "../pages/users-list.page";
 export const router = createBrowserRouter([
     {
         path: "/",
@@ -95,8 +96,12 @@ export const router = createBrowserRouter([
                 element: <ProfilePage />,
             },
             {
-                path: '/edit-profile',
+                path: '/edit-profile/:id',
                 element: <EditProfilePage />,
+            },
+            {
+                path: '/users',
+                element: <UsersListPage />,
             }
         ]
     },

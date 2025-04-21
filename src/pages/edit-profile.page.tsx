@@ -1,14 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useNavigation, useParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Eye, EyeClosed, X } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../lib/api";
+import { FullScreenLoader } from "../components/full-screen-loader";
+import { Header } from "../components/header";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Switch } from "../components/ui/switch";
 
 export function EditProfilePage() {
-    const { userId } = useParams<{ userId: string }>();
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -17,19 +23,22 @@ export function EditProfilePage() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: ''
+        password: '',
+        role: 'MEMBER' as 'ADMIN' | 'MEMBER',
+        active: true
     });
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await api.get(`/users/${userId}`);
+                const response = await api.get(`/users/${id}`);
                 setFormData({
-                    name: response.data.name,
-                    email: response.data.email,
-                    password: '' // Password não é retornado pela API
+                    name: response.data.user.name,
+                    email: response.data.user.email,
+                    password: '',
+                    role: response.data.user.role,
+                    active: response.data.user.active
                 });
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
                 setError('Error al cargar el usuario');
                 toast.error('No se pudo cargar la información del usuario');
@@ -38,18 +47,25 @@ export function EditProfilePage() {
             }
         };
 
-        if (userId) {
+        if (id) {
             fetchUser();
         }
-    }, [userId]);
+    }, [id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
-            await api.patch(`/users/${userId}`, {
+            // Actualizar datos básicos
+            await api.patch(`/users/${id}`, {
                 name: formData.name,
-                password: formData.password || undefined // Só atualiza se houver mudança
+                password: formData.password || undefined,
+                role: formData.role
+            });
+
+            // Actualizar estado activo/inactivo
+            await api.patch(`/users/${id}/status`, {
+                active: formData.active
             });
 
             toast.success("Perfil actualizado correctamente");
@@ -61,11 +77,7 @@ export function EditProfilePage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-        );
+        return <FullScreenLoader />;
     }
 
     if (error) {
@@ -79,18 +91,9 @@ export function EditProfilePage() {
 
     return (
         <div className="flex flex-col h-screen px-4 bg-gray-100">
-            <header className="flex items-center justify-between py-4 bg-white rounded-lg mb-6 px-4 shadow-sm">
-                <h1 className="text-xl font-semibold">Editar perfil</h1>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(-1)}
-                >
-                    <X className="w-5 h-5" />
-                </Button>
-            </header>
+            <Header title="Editar perfil" onBack={() => navigate(-1)} />
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6 shadow-sm space-y-6">
+            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-sm space-y-6">
                 <div className="space-y-4">
                     <div>
                         <Label>Nombre completo</Label>
@@ -129,6 +132,35 @@ export function EditProfilePage() {
                             >
                                 {showPassword ? <EyeClosed className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <Label>Rol del usuario</Label>
+                        <Select
+                            value={formData.role}
+                            onValueChange={(value) => setFormData({ ...formData, role: value as 'ADMIN' | 'MEMBER' })}
+                        >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Seleccionar rol" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ADMIN">Administrador</SelectItem>
+                                <SelectItem value="MEMBER">Miembro</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <Label>Estado del usuario</Label>
+                        <div className="flex items-center gap-2">
+                            <Switch
+                                checked={formData.active}
+                                onCheckedChange={(checked: any) => setFormData({ ...formData, active: checked })}
+                            />
+                            <span className="text-sm">
+                                {formData.active ? 'Activo' : 'Inactivo'}
+                            </span>
                         </div>
                     </div>
                 </div>

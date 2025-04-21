@@ -1,0 +1,141 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Header } from '../components/header';
+import { Input } from '../components/ui/input';
+import { User } from 'lucide-react';
+import { Card, CardContent } from '../components/ui/card';
+import { UserDTO } from '../dtos/user.dto';
+import { FullScreenLoader } from '../components/full-screen-loader';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { listUsers } from '../services/users.service';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import DefaultAvatar from './../assets/default-avatar.svg'
+
+export function UsersListPage() {
+    const navigate = useNavigate();
+    const [search, setSearch] = useState('');
+    const [users, setUsers] = useState<UserDTO[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    const filteredUsers = users.filter(user => {
+        const searchLower = search.toLowerCase();
+        return (
+            user.name.toLowerCase().includes(searchLower) ||
+            user.email.toLowerCase().includes(searchLower)
+        );
+    });
+
+    const loadUsers = async () => {
+        setLoading(true);
+        try {
+            const data = await listUsers();
+            setUsers(data);
+        } catch (error) {
+            console.error('Error al cargar usuarios:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadUsers();
+    }, []);
+
+    const getRoleLabel = (role: string) => {
+        return role === 'ADMIN' ? 'Administrador' : 'Miembro';
+    };
+
+    const formatDate = (date: Date) => {
+        return format(new Date(date), 'dd MMM yyyy', { locale: es });
+    };
+
+    return (
+        <>
+            <div className="flex px-4 flex-col min-h-screen mb-16">
+                <Header title="Usuarios" onBack={() => navigate('/')} />
+
+                <div className="pt-4 pb-4 max-w-3xl mx-auto w-full">
+                    <div className="flex items-center justify-between gap-2 mb-6">
+                        <div className="flex flex-1 relative">
+                            <Input
+                                placeholder="Buscar usuarios por nombre o email..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="bg-white shadow-sm"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="mt-4 space-y-3">
+                        {filteredUsers.map(user => (
+                            <Card
+                                key={user.id}
+                                className="cursor-pointer hover:bg-white transition-colors p-1 hover:shadow overflow-hidden bg-white"
+                                onClick={() => navigate(`/edit-profile/${user.id}`)}
+                            >
+                                <CardContent className="p-0">
+                                    <div className="flex flex-col">
+                                        <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
+                                            <div className="flex items-center gap-2">
+                                                <Avatar className="w-10 h-10">
+                                                    <AvatarImage src={user.avatarUrl} />
+                                                    <AvatarFallback className=" text-white">
+                                                        <img
+                                                            src={DefaultAvatar}
+                                                            alt="Fallback"
+                                                            className="w-full h-full object-contain p-1"
+                                                        />
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <h3 className="font-medium">
+                                                    {user.name}
+                                                </h3>
+                                            </div>
+                                            <span className={`text-sm font-semibold ${user.role === 'ADMIN' ? 'text-primary' : 'text-gray-600'
+                                                }`}>
+                                                {getRoleLabel(user.role)}
+                                            </span>
+                                        </div>
+
+                                        <div className="px-4 py-3">
+                                            <div className="flex justify-between items-center text-sm">
+                                                <div className="text-gray-600">
+                                                    <span className="block">{user.email}</span>
+                                                    <span className="text-xs mt-1">
+                                                        Registrado: {formatDate(user.createdAt)}
+                                                    </span>
+                                                </div>
+                                                <span className="text-xs text-gray-500">
+                                                    ID: {user.id.slice(0, 8)}...
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+
+                        {loading && <FullScreenLoader />}
+
+                        {!loading && filteredUsers.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <div className="bg-gray-100 rounded-full p-4 mb-3">
+                                    <User className="h-8 w-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-800">
+                                    {users.length === 0
+                                        ? 'No hay usuarios registrados'
+                                        : 'No se encontraron resultados'}
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    {search && 'Prueba con otra búsqueda'}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}

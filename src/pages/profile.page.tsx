@@ -21,7 +21,7 @@ export function ProfilePage() {
 
     return (
         <div className="flex flex-col h-screen px-4 ">
-            <Header title="Perfil" onBack={() => navigate('/')} />
+            <Header title="Perfil" onBack={() => navigate(-1)} />
 
             <div className=" pt-10">
                 <div className="flex flex-col items-center mb-8">
@@ -42,7 +42,7 @@ export function ProfilePage() {
                     <Button
                         variant="ghost"
                         className="w-full justify-start gap-2"
-                        onClick={() => navigate('/edit-profile')}
+                        onClick={() => navigate(`/edit-profile/${user?.id}`)}
                     >
                         <Settings className="w-4 h-4" />
                         Editar perfil
