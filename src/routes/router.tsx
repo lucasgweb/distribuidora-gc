@@ -18,6 +18,8 @@ import { SaleFinished } from "../pages/sale-finished.page";
 import { SaleDetail } from "../pages/sale-detail.page";
 import { GenerateInvitePage } from "../pages/generate-invite.page";
 import { RegisterPage } from "../pages/register.page";
+import { ProfilePage } from "../pages/profile.page";
+import { EditProfilePage } from "../pages/edit-profile.page";
 export const router = createBrowserRouter([
     {
         path: "/",
@@ -88,6 +90,14 @@ export const router = createBrowserRouter([
                 path: "/generate-invite",
                 element: <GenerateInvitePage />
             },
+            {
+                path: '/profile',
+                element: <ProfilePage />,
+            },
+            {
+                path: '/edit-profile',
+                element: <EditProfilePage />,
+            }
         ]
     },
     {

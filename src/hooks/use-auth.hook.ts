@@ -7,6 +7,7 @@ export function useAuth() {
   const navigate = useNavigate();
 
   const {
+    user,
     actions: { clear, setToken, setUser },
   } = useAuthStore.getState();
   const logout = () => {
@@ -30,5 +31,6 @@ export function useAuth() {
   return {
     logout,
     login,
+    user,
   };
 }

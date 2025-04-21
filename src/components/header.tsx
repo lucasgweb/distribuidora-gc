@@ -1,6 +1,10 @@
 import { ArrowLeft, ChartArea, Menu, Package, Settings, User, UserPlus, Users, X } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet"
 import { Link } from "react-router-dom"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+
+import { useAuth } from "../hooks/use-auth.hook"
+import DefaultAvatar from './../assets/default-avatar.svg'
 
 type Props = {
     title: string
@@ -9,6 +13,10 @@ type Props = {
 }
 
 export function Header({ title, onBack, closeIcon }: Props) {
+
+    const { user } = useAuth();
+
+    console.log(user)
     return (
         <div className="flex items-center justify-between w-full py-2 bg-white">
             {onBack ? (
@@ -88,28 +96,33 @@ export function Header({ title, onBack, closeIcon }: Props) {
                                         <span><Settings /></span>
                                         Configurações
                                     </Link>
-                                        <Link
-                                            to="/generate-invite"
-                                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
-                                        >
-                                            <span><UserPlus className="w-5 h-5" /></span>
-                                            Generar Invitación
-                                        </Link>
+                                    <Link
+                                        to="/generate-invite"
+                                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
+                                    >
+                                        <span><UserPlus className="w-5 h-5" /></span>
+                                        Generar Invitación
+                                    </Link>
                                 </nav>
                             </div>
                         </SheetContent>
                     </Sheet>
 
-                    <button
+                    <Link
+                        to="/profile"
                         className="hover:ring-2 ring-blue-200 rounded-full transition-all"
-                        aria-label="Perfil do usuário"
                     >
-                        <img
-                            src="https://randomuser.me/api/portraits/women/79.jpg"
-                            alt="Foto do usuário"
-                            className="w-10 h-10 rounded-full border-2 border-white"
-                        />
-                    </button>
+                        <Avatar className="w-13 h-13 border-2 bg-gray-50 border-white">
+                            <AvatarImage src={user?.avatarUrl} />
+                            <AvatarFallback className="bg-white p-1">
+                                <img
+                                    src={DefaultAvatar}
+                                    alt="Fallback Logo"
+                                    className="w-full h-full object-contain"
+                                />
+                            </AvatarFallback>
+                        </Avatar>
+                    </Link>
                 </div>
             )}
         </div>
