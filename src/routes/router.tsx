@@ -16,6 +16,8 @@ import { ClientFormPage } from "../pages/client-form.page";
 import { SalesListPage } from "../pages/sales-list.page";
 import { SaleFinished } from "../pages/sale-finished.page";
 import { SaleDetail } from "../pages/sale-detail.page";
+import { GenerateInvitePage } from "../pages/generate-invite.page";
+import { RegisterPage } from "../pages/register.page";
 export const router = createBrowserRouter([
     {
         path: "/",
@@ -82,6 +84,10 @@ export const router = createBrowserRouter([
                 path: "/sales-list",
                 element: <SalesListPage />
             },
+            {
+                path: "/generate-invite",
+                element: <GenerateInvitePage />
+            },
         ]
     },
     {
@@ -90,6 +96,10 @@ export const router = createBrowserRouter([
         children: [{
             path: "/login",
             element: <LoginPage />
+        },
+        {
+            path: "/register",
+            element: <RegisterPage />
         },
         ]
     },

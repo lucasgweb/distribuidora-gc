@@ -22,7 +22,7 @@ export function BottomNav() {
                     if (item.type === "action") {
                         return (
                             <button
-                                onClick={() => navigate('register-menu')}
+                                onClick={() => navigate('/register-menu')}
                                 key={index}
                                 className="bg-primary m-auto text-white p-2 rounded-full justify-center items-center align-middle flex h-13 w-13 shadow-lg hover:bg-primary/90 transition-colors"
                             >

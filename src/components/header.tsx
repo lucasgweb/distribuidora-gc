@@ -1,4 +1,4 @@
-import { ArrowLeft, ChartArea, Menu, Package, Settings, User, X } from "lucide-react"
+import { ArrowLeft, ChartArea, Menu, Package, Settings, User, UserPlus, Users, X } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet"
 import { Link } from "react-router-dom"
 
@@ -47,7 +47,6 @@ export function Header({ title, onBack, closeIcon }: Props) {
                                 <div className="flex items-center justify-between mb-8">
                                     <h2 className="text-xl font-bold text-gray-800">Menu</h2>
                                     <SheetClose >
-
                                         <span className="sr-only">Fechar menu</span>
                                     </SheetClose>
                                 </div>
@@ -60,6 +59,13 @@ export function Header({ title, onBack, closeIcon }: Props) {
                                     >
                                         <span><User /></span>
                                         Clientes
+                                    </Link>
+                                    <Link
+                                        to="#"
+                                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
+                                    >
+                                        <span><Users /></span>
+                                        Usuarios
                                     </Link>
                                     <Link
                                         to="/products"
@@ -82,6 +88,13 @@ export function Header({ title, onBack, closeIcon }: Props) {
                                         <span><Settings /></span>
                                         Configurações
                                     </Link>
+                                        <Link
+                                            to="/generate-invite"
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
+                                        >
+                                            <span><UserPlus className="w-5 h-5" /></span>
+                                            Generar Invitación
+                                        </Link>
                                 </nav>
                             </div>
                         </SheetContent>

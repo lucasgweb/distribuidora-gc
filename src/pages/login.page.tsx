@@ -3,7 +3,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import LogoIcon from "../assets/logo-icon.png";
 import { Eye, EyeClosed } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/use-auth.hook";
 import { toast } from "sonner"
 
@@ -27,7 +27,7 @@ export function LoginPage() {
 
     return (
         <div className="flex items-center flex-col justify-center h-screen px-8 bg-gray-100 relative overflow-hidden">
-            <div className="fixed -right-[70%] -top-[37%] w-[80vh] h-[80vh] rounded-full bg-primary/5 z-0" />
+            <div className="fixed -right-[70%] -top-[40%] w-[80vh] h-[80vh] rounded-full bg-primary/5 z-0" />
 
             <img src={LogoIcon} alt="Logo" className="w-20 h-20 mx-auto mb-4 z-10" />
             <h1 className="text-3xl font-bold mb-4 text-primary z-10">Iniciar sesión</h1>
@@ -77,9 +77,11 @@ export function LoginPage() {
                 <Button className="w-full" type="submit">
                     Iniciar sesión
                 </Button>
-                <Button className="w-full mt-6 text-gray-900" variant="link" type="button">
-                    Crear nueva cuenta
-                </Button>
+                <Link to='/register'>
+                    <Button className="w-full mt-6 text-gray-900" variant="link" type="button">
+                        Crear nueva cuenta
+                    </Button>
+                </Link>
             </form>
         </div>
     );
