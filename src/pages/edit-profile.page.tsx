@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
-import { useNavigate, useNavigation, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Eye, EyeClosed, X } from "lucide-react";
+import { Eye, EyeClosed } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../lib/api";
 import { FullScreenLoader } from "../components/full-screen-loader";
