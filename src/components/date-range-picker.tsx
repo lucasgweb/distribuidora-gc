@@ -46,13 +46,10 @@ export function DateRangePicker({ date, onDateChange, className }: DateRangePick
                     <Calendar
                         mode="range"
                         selected={date}
-                        hideHead
-                        showWeekNumber
                         onSelect={onDateChange}
                         defaultMonth={date?.from}
                         numberOfMonths={2}
                         locale={es}
-                        initialFocus
                     />
                 </PopoverContent>
             </Popover>
