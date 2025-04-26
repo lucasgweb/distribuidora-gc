@@ -53,7 +53,7 @@ export function AdvancedSalesReportsPage() {
 
     return <>
         <div className="flex px-4 flex-col min-h-screen mb-16">
-            <Header title="Relatorios" onBack={() => navigate('/')} />
+            <Header title="Reportes" onBack={() => navigate('/')} />
 
             <AdvancedSalesReports clients={clients} sellers={sellers} />
 
