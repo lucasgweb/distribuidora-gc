@@ -2,14 +2,12 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
-import { Loader2, Calendar, User, CreditCard } from 'lucide-react';
-import { Card, CardContent } from '../components/ui/card';
+import { Loader2, CreditCard } from 'lucide-react';
 import { listSales } from '../services/sales.service';
 import { SaleDTO } from '../dtos/sale.dto';
-import { FullScreenLoader } from '../components/full-screen-loader';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { BottomNav } from '../components/bottom-nav';
+import { SaleCard } from '../components/sale-card';
+import { FullScreenLoader } from '../components/full-screen-loader';
 
 const PAGE_SIZE = 10;
 
@@ -77,18 +75,6 @@ export function SalesListPage() {
         };
     }, [hasMore, loading]);
 
-    const getPaymentMethodLabel = (method: string) => {
-        return method === 'CASH' ? 'Efectivo' : 'Yape';
-    };
-
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-        }).format(amount);
-    };
-
     return (
         <>
             <div className="flex px-4 flex-col min-h-screen mb-16">
@@ -109,61 +95,8 @@ export function SalesListPage() {
 
                     <div className="mt-4 space-y-3">
                         {sales.map(sale => (
-                            <Card
-                                key={sale.id}
-                                className="cursor-pointer hover:bg-white transition-colors p-1 hover:shadow overflow-hidden bg-white"
-                                onClick={() => navigate(`/sale-detail/${sale.id}`)}
-                            >
-                                <CardContent className="p-0">
-                                    <div className="flex flex-col">
-                                        {/* Header with ID and Amount */}
-                                        <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
-                                            <div className="flex items-center gap-2">
-                                                #{sale.code}
-                                                <h3 className="font-medium">
-                                                    {sale.client.name}
-                                                </h3>
-                                            </div>
-                                            <span className="font-semibold text-green-600">
-                                                {formatCurrency(sale.totalAmount)}
-                                            </span>
-                                        </div>
+                            <SaleCard sale={sale} key={sale.id} />
 
-                                        {/* Details */}
-                                        <div className="px-4 py-3">
-                                            <div className="flex justify-between items-center text-sm">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex items-center gap-1 text-gray-600">
-                                                        <CreditCard className="w-4 h-4" />
-                                                        {getPaymentMethodLabel(sale.paymentMethod)}
-
-                                                    </div>
-
-                                                    <div className="flex items-center gap-1 text-gray-600">
-                                                        <Calendar className="w-4 h-4" />
-                                                        <span className="text-xs">
-                                                            {format(new Date(sale.createdAt), 'dd MMM yyyy HH:mm', {
-                                                                locale: es
-                                                            })}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center gap-4">
-
-
-                                                    <div className="flex items-center gap-1 text-gray-600">
-                                                        <User className="w-4 h-4" />
-                                                        <span className="text-xs">
-                                                            {sale.user.name}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
                         ))}
 
                         {loading && page === 1 && <FullScreenLoader />}
@@ -195,7 +128,7 @@ export function SalesListPage() {
                         )}
                     </div>
                 </div>
-            </div>
+            </div >
             <BottomNav />
         </>
     );

@@ -21,6 +21,7 @@ import { RegisterPage } from "../pages/register.page";
 import { ProfilePage } from "../pages/profile.page";
 import { EditProfilePage } from "../pages/edit-profile.page";
 import { UsersListPage } from "../pages/users-list.page";
+import { AdvancedSalesReportsPage } from "../pages/advanced-sales-reports.page";
 export const router = createBrowserRouter([
     {
         path: "/",
@@ -102,6 +103,10 @@ export const router = createBrowserRouter([
             {
                 path: '/users',
                 element: <UsersListPage />,
+            },
+            {
+                path: '/reports',
+                element: <AdvancedSalesReportsPage />,
             }
         ]
     },

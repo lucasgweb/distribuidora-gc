@@ -256,7 +256,7 @@ export function SaleDetail() {
             <div className="print:hidden">
                 <Header
                     title="Comprobante de Venta"
-                    onBack={() => navigate("/sales-list")}
+                    onBack={() => navigate(-1)}
                 />
             </div>
             <div className="max-w-4xl mx-auto w-full flex-1  print:px-0">
