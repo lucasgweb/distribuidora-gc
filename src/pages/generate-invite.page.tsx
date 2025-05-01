@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 export function GenerateInvitePage() {
     const navigate = useNavigate();
     const [code, setCode] = useState<string | null>(null);
-    const [minutes, setMinutes] = useState<number>(60);
+    const [minutes, setMinutes] = useState<string>('60');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +20,14 @@ export function GenerateInvitePage() {
         try {
             setLoading(true);
             setError(null);
-            const params = minutes > 0 ? { expiresInMinutes: minutes } : undefined;
+
+            const parsedMinutes = minutes === '' ? 0 : parseInt(minutes, 10);
+            const finalMinutes = isNaN(parsedMinutes) ? 0 : parsedMinutes;
+
+            const params = finalMinutes > 0
+                ? { expiresInMinutes: finalMinutes }
+                : undefined;
+
             const { code } = await generateInviteCode(params);
             setCode(code);
         } catch (err) {
@@ -58,7 +65,7 @@ export function GenerateInvitePage() {
                                     type="number"
                                     min="0"
                                     value={minutes}
-                                    onChange={(e) => setMinutes(Number(e.target.value))}
+                                    onChange={(e) => setMinutes(e.target.value)}
                                     placeholder="60"
                                 />
                                 <p className="text-sm text-muted-foreground">
@@ -102,7 +109,7 @@ export function GenerateInvitePage() {
                                             </Button>
                                         </div>
 
-                                        {minutes > 0 && (
+                                        {Number(minutes) > 0 && (
                                             <p className="text-sm text-gray-500 mt-3">
                                                 Expira en {minutes} minutos
                                             </p>

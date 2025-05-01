@@ -1,4 +1,4 @@
-import { Home, PieChart, Settings, Plus, NotepadText } from "lucide-react";
+import { Home, PieChart, Plus, NotepadText, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export function BottomNav() {
@@ -11,8 +11,8 @@ export function BottomNav() {
         { route: "/", icon: Home, label: "Inicio" },
         { route: "/sales-list", icon: NotepadText, label: "Ventas" },
         { type: "action" as const, icon: Plus },
+        { route: "/clients", icon: User, label: "Clientes" },
         { route: "/reports", icon: PieChart, label: "Reportes" },
-        { route: "/settings", icon: Settings, label: "Ajustes" },
     ];
 
     return (

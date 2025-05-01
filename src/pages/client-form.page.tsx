@@ -8,10 +8,59 @@ import { ClientDTO } from '../dtos/client.dto';
 import { createClient, getClient, updateClient } from '../services/clients.service';
 import { FullScreenLoader } from '../components/full-screen-loader';
 
+// Función para formatear número de teléfono para Perú (+51)
+function formatPhoneNumber(value: string): string {
+    let cleaned = value.replace(/\D/g, '');
+
+    // Manejar números que ya empiezan con 51
+    if (cleaned.startsWith('51')) {
+        cleaned = cleaned.substring(0, 11); // Limitar a 11 dígitos (51 + 9)
+    } else {
+        cleaned = '51' + cleaned;
+        cleaned = cleaned.substring(0, 11); // Limitar a 11 dígitos (51 + 9)
+    }
+
+    if (cleaned.length === 0) return '';
+
+    const countryCode = cleaned.substring(0, 2);
+    const rest = cleaned.substring(2);
+
+    let formatted = `+${countryCode}`;
+
+    if (rest.length > 0) {
+        formatted += ' ';
+        for (let i = 0; i < rest.length; i += 3) {
+            const part = rest.substring(i, i + 3);
+            formatted += part;
+            if (i + 3 < rest.length) {
+                formatted += ' ';
+            }
+        }
+    }
+
+    return formatted;
+}
+
+// Validación de DNI peruano (8 dígitos)
+function isValidDNI(dni: string): boolean {
+    return /^\d{8}$/.test(dni);
+}
+
+// Validación de RUC peruano (11 dígitos y comienza con 10 o 20)
+function isValidRUC(ruc: string): boolean {
+    return /^(10|20)\d{9}$/.test(ruc);
+}
+
+// Validación combinada DNI/RUC
+function isValidDNIorRUC(value: string): boolean {
+    return isValidDNI(value) || isValidRUC(value);
+}
+
 export function ClientFormPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [client, setClient] = useState<ClientDTO>({
         id: '',
@@ -29,7 +78,10 @@ export function ClientFormPage() {
             if (id && id !== 'new') {
                 try {
                     const data = await getClient(id);
-                    setClient(data);
+                    setClient({
+                        ...data,
+                        phone: formatPhoneNumber(data.phone),
+                    });
                 } catch (error) {
                     console.error('Error loading client:', error);
                 } finally {
@@ -43,33 +95,80 @@ export function ClientFormPage() {
         loadClient();
     }, [id]);
 
+    const validateForm = (): boolean => {
+        const newErrors: Record<string, string> = {};
+
+        // Validar DNI/RUC
+        if (!isValidDNIorRUC(client.dni)) {
+            newErrors.dni = 'Ingrese un DNI válido (8 dígitos) o RUC válido (11 dígitos)';
+        }
+
+        // Validar teléfono peruano (+51)
+        const phoneDigits = client.phone.replace(/\D/g, '');
+        if (phoneDigits.length > 0) {
+            const isPhoneValid = phoneDigits.startsWith('51') && phoneDigits.length === 11;
+            if (!isPhoneValid) {
+                newErrors.phone = 'Número inválido. Formato requerido: +51 987 654 321';
+            }
+        } else {
+            newErrors.phone = 'El número de teléfono es requerido';
+        }
+
+        // Validar email
+        if (client.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client.email)) {
+            newErrors.email = 'Ingrese un email válido';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (!validateForm()) {
+            return;
+        }
+
         try {
+            // Limpiar formato del teléfono antes de guardar
+            const cleanedPhone = client.phone.replace(/\s/g, '');
+
             if (id && id !== 'new') {
                 await updateClient({
-                    id: client.id,
-                    name: client.name,
-                    dni: client.dni,
-                    phone: client.phone,
-                    email: client.email,
-                    address: client.address,
+                    ...client,
+                    phone: cleanedPhone,
                 });
             } else {
                 await createClient({
-                    name: client.name,
-                    dni: client.dni,
-                    phone: client.phone,
-                    email: client.email,
-                    address: client.address,
+                    ...client,
+                    phone: cleanedPhone,
                 });
             }
 
             navigate('/clients');
         } catch (error) {
             console.error('Error saving client:', error);
-            alert('Ocorreu um erro ao salvar o cliente.');
+            alert('Ocurrió un error al guardar el cliente.');
+        }
+    };
+
+    const handleDNIChange = (value: string) => {
+        const onlyNums = value.replace(/\D/g, '');
+        setClient({ ...client, dni: onlyNums });
+        if (isValidDNIorRUC(onlyNums)) {
+            setErrors({ ...errors, dni: '' });
+        }
+    };
+
+    const handlePhoneChange = (value: string) => {
+        const formatted = formatPhoneNumber(value);
+        setClient({ ...client, phone: formatted });
+
+        // Validación en tiempo real
+        const phoneDigits = formatted.replace(/\D/g, '');
+        if (phoneDigits.startsWith('51') && phoneDigits.length === 11) {
+            setErrors({ ...errors, phone: '' });
         }
     };
 
@@ -99,20 +198,25 @@ export function ClientFormPage() {
 
                             <div className="grid gap-4">
                                 <div>
-                                    <Label>DNI</Label>
+                                    <Label>DNI/RUC</Label>
                                     <Input
                                         required
                                         value={client.dni}
-                                        onChange={e => setClient({ ...client, dni: e.target.value })}
+                                        onChange={e => handleDNIChange(e.target.value)}
+                                        placeholder="DNI (8 dígitos) o RUC (11 dígitos)"
+                                        maxLength={11}
                                     />
+                                    {errors.dni && <p className="text-red-500 text-sm mt-1">{errors.dni}</p>}
                                 </div>
                                 <div>
                                     <Label>Teléfono</Label>
                                     <Input
                                         required
                                         value={client.phone}
-                                        onChange={e => setClient({ ...client, phone: e.target.value })}
+                                        onChange={e => handlePhoneChange(e.target.value)}
+                                        placeholder="+51 987 654 321"
                                     />
+                                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                                 </div>
                                 <div>
                                     <Label>Email</Label>
@@ -121,6 +225,7 @@ export function ClientFormPage() {
                                         value={client.email || ''}
                                         onChange={e => setClient({ ...client, email: e.target.value })}
                                     />
+                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                 </div>
                             </div>
 

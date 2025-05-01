@@ -48,7 +48,7 @@ export function DateRangePicker({ date, onDateChange, className }: DateRangePick
                         selected={date}
                         onSelect={onDateChange}
                         defaultMonth={date?.from}
-                        numberOfMonths={2}
+                        numberOfMonths={1}
                         locale={es}
                     />
                 </PopoverContent>

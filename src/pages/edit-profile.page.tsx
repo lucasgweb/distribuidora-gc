@@ -12,20 +12,31 @@ import { FullScreenLoader } from "../components/full-screen-loader";
 import { Header } from "../components/header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Switch } from "../components/ui/switch";
+import { useAuth } from "../hooks/use-auth.hook";
+
+type FormData = {
+    name: string;
+    email: string;
+    password: string;
+    role: 'ADMIN' | 'MEMBER';
+    active: boolean;
+};
 
 export function EditProfilePage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const isEditingSelf = user?.id === id;
+
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormData>({
         name: '',
         email: '',
         password: '',
-        role: 'MEMBER' as 'ADMIN' | 'MEMBER',
-        active: true
+        role: 'MEMBER',
+        active: true,
     });
 
     useEffect(() => {
@@ -37,9 +48,9 @@ export function EditProfilePage() {
                     email: response.data.user.email,
                     password: '',
                     role: response.data.user.role,
-                    active: response.data.user.active
+                    active: response.data.user.active,
                 });
-            } catch (error) {
+            } catch (err) {
                 setError('Error al cargar el usuario');
                 toast.error('No se pudo cargar la información del usuario');
             } finally {
@@ -47,39 +58,30 @@ export function EditProfilePage() {
             }
         };
 
-        if (id) {
-            fetchUser();
-        }
+        if (id) fetchUser();
     }, [id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         try {
-            // Actualizar datos básicos
             await api.patch(`/users/${id}`, {
                 name: formData.name,
                 password: formData.password || undefined,
-                role: formData.role
+                ...(isEditingSelf ? {} : { role: formData.role }),
             });
 
-            // Actualizar estado activo/inactivo
-            await api.patch(`/users/${id}/status`, {
-                active: formData.active
-            });
-
+            if (!isEditingSelf) {
+                await api.patch(`/users/${id}/status`, { active: formData.active });
+            }
             toast.success("Perfil actualizado correctamente");
             navigate(-1);
-        } catch (error) {
+        } catch (err) {
             toast.error("Error al actualizar el perfil");
-            console.error('Update error:', error);
+            console.error('Update error:', err);
         }
     };
 
-    if (loading) {
-        return <FullScreenLoader />;
-    }
-
+    if (loading) return <FullScreenLoader />;
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center h-screen gap-4">
@@ -90,16 +92,16 @@ export function EditProfilePage() {
     }
 
     return (
-        <div className="flex flex-col h-screen px-4 bg-gray-100">
+        <div className="flex flex-col h-screen px-4 ">
             <Header title="Editar perfil" onBack={() => navigate(-1)} />
 
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-sm space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-4">
                     <div>
                         <Label>Nombre completo</Label>
                         <Input
                             value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
                             placeholder="Ingresa el nombre completo"
                             required
                         />
@@ -119,9 +121,9 @@ export function EditProfilePage() {
                         <Label>Nueva contraseña</Label>
                         <div className="relative">
                             <Input
-                                type={showPassword ? "text" : "password"}
+                                type={showPassword ? 'text' : 'password'}
                                 value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                onChange={e => setFormData({ ...formData, password: e.target.value })}
                                 placeholder="Dejar en blanco para no cambiar"
                                 minLength={8}
                             />
@@ -137,18 +139,26 @@ export function EditProfilePage() {
 
                     <div className="flex items-center justify-between">
                         <Label>Rol del usuario</Label>
-                        <Select
-                            value={formData.role}
-                            onValueChange={(value) => setFormData({ ...formData, role: value as 'ADMIN' | 'MEMBER' })}
-                        >
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Seleccionar rol" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ADMIN">Administrador</SelectItem>
-                                <SelectItem value="MEMBER">Miembro</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        {isEditingSelf ? (
+                            <Input
+                                value={formData.role === 'ADMIN' ? 'Administrador' : 'Miembro'}
+                                disabled
+                                className="w-[180px] bg-gray-100 text-gray-600 cursor-not-allowed"
+                            />
+                        ) : (
+                            <Select
+                                value={formData.role}
+                                onValueChange={value => setFormData({ ...formData, role: value as 'ADMIN' | 'MEMBER' })}
+                            >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Seleccionar rol" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ADMIN">Administrador</SelectItem>
+                                    <SelectItem value="MEMBER">Miembro</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -156,7 +166,8 @@ export function EditProfilePage() {
                         <div className="flex items-center gap-2">
                             <Switch
                                 checked={formData.active}
-                                onCheckedChange={(checked: any) => setFormData({ ...formData, active: checked })}
+                                onCheckedChange={!isEditingSelf ? (checked: any) => setFormData({ ...formData, active: checked }) : undefined}
+                                disabled={isEditingSelf}
                             />
                             <span className="text-sm">
                                 {formData.active ? 'Activo' : 'Inactivo'}

@@ -69,11 +69,7 @@ export function LoginPage() {
                         )}
                     </button>
                 </div>
-                <div className="flex items-center justify-end my-8">
-                    <a href="#" className="text-sm text-primary font-medium hover:underline">
-                        ¿Olvidaste tu contraseña?
-                    </a>
-                </div>
+
                 <Button className="w-full" type="submit">
                     Iniciar sesión
                 </Button>

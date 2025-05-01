@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useMemo } from 'react'
-import { Download, Loader2 } from 'lucide-react'
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { DateRange } from 'react-day-picker'
 import { ClientSearch } from './client-search'
 import { DateRangePicker } from './date-range-picker'
-import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
@@ -15,33 +13,51 @@ import { ClientDTO } from '../dtos/client.dto'
 import { UserDTO } from '../dtos/user.dto'
 import { getReport } from '../services/sales-report.service'
 import { SaleReportDTO, SalesReportFilterDTO } from '../dtos/sale-report.dto'
-import { api } from '../lib/api'
 import { Skeleton } from './ui/skeleton'
+import { useAuth } from '../hooks/use-auth.hook'
+import { useMediaQuery } from 'usehooks-ts'
 
 interface AdvancedSalesReportsProps {
     clients: ClientDTO[]
     sellers: UserDTO[]
 }
 
-const formatChartDate = (date: Date, mobile: boolean) => {
-    return new Date(date).toLocaleDateString('es-PE', {
-        day: 'numeric',
-        month: mobile ? 'short' : '2-digit'
-    })
-}
-
 export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsProps) {
-    const [dateRange, setDateRange] = useState<DateRange>()
-    const [selectedSeller, setSelectedSeller] = useState('all')
+    const { user } = useAuth()
+    const isMember = user?.role === "MEMBER"
+    const isMobile = useMediaQuery('(max-width: 768px)')
+
+    const getCurrentMonthDateRange = (): DateRange => {
+        const today = new Date()
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        return {
+            from: firstDayOfMonth,
+            to: today
+        }
+    }
+
+    const [dateRange, setDateRange] = useState<DateRange>(getCurrentMonthDateRange)
+    const [selectedSeller, setSelectedSeller] = useState<string>(isMember && user?.id ? user.id : 'all')
     const [selectedClient, setSelectedClient] = useState<ClientDTO | undefined>()
     const [clientSearchQuery, setClientSearchQuery] = useState('')
     const [salesData, setSalesData] = useState<SaleReportDTO[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string>()
 
-    // Agrupar dados por dia
     const chartData = useMemo(() => {
-        const grouped = salesData.reduce((acc: Record<string, { total: number; quantity: number }>, item) => {
+        if (!dateRange.from || !dateRange.to) return []
+
+        // Cria um array com todos os dias do intervalo selecionado
+        const daysArray: Date[] = []
+        let currentDate = new Date(dateRange.from)
+
+        while (currentDate <= dateRange.to) {
+            daysArray.push(new Date(currentDate))
+            currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1))
+        }
+
+        // Formata as datas para YYYY-MM-DD
+        const salesByDate = salesData.reduce((acc: Record<string, { total: number; quantity: number }>, item) => {
             const date = new Date(item.date).toISOString().split('T')[0]
             if (!acc[date]) {
                 acc[date] = { total: 0, quantity: 0 }
@@ -51,15 +67,24 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
             return acc
         }, {})
 
-        return Object.entries(grouped).map(([date, values]) => ({
-            date,
-            total: values.total,
-            quantity: values.quantity
-        }))
-    }, [salesData])
+        // Cria os dados do gráfico
+        return daysArray.map(date => {
+            const dateString = date.toISOString().split('T')[0]
+            return {
+                date: dateString,
+                formattedDate: `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`,
+                total: salesByDate[dateString]?.total || 0,
+                quantity: salesByDate[dateString]?.quantity || 0
+            }
+        })
+    }, [salesData, dateRange])
+
+    const totalSales = useMemo(() => salesData.reduce((sum, item) => sum + item.totalAmount, 0), [salesData])
+    const totalQuantity = useMemo(() => salesData.reduce((sum, item) => sum + item.quantity, 0), [salesData])
+    const averageTicket = useMemo(() => salesData.length ? totalSales / salesData.length : 0, [salesData, totalSales])
 
     const salesByUser = useMemo(() => {
-        return salesData.reduce((acc: { userId: string; userName: string; quantity: number; totalAmount: number }[], sale) => {
+        return salesData.reduce((acc: Array<{ userId: string; userName: string; quantity: number; totalAmount: number }>, sale) => {
             const existing = acc.find(u => u.userId === sale.userId)
             if (existing) {
                 existing.quantity += sale.quantity
@@ -78,44 +103,18 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
 
     const fetchData = async () => {
         setIsLoading(true)
-        setError(undefined)
         try {
             const filters: SalesReportFilterDTO = {
-                startDate: dateRange?.from?.toISOString(),
-                endDate: dateRange?.to?.toISOString(),
+                startDate: dateRange.from?.toISOString(),
+                endDate: dateRange.to?.toISOString(),
                 clientId: selectedClient?.id,
                 userId: selectedSeller === 'all' ? undefined : selectedSeller
             }
             const data = await getReport(filters)
             setSalesData(data)
+            setError(undefined)
         } catch (err) {
             setError('Error al cargar los datos. Por favor intente nuevamente.')
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handleExport = async () => {
-        setIsLoading(true)
-        try {
-            const filters: SalesReportFilterDTO = {
-                startDate: dateRange?.from?.toISOString(),
-                endDate: dateRange?.to?.toISOString(),
-                clientId: selectedClient?.id,
-                userId: selectedSeller === 'all' ? undefined : selectedSeller
-            }
-            const response = await api.get<Blob>('/reports/sales/export', {
-                params: filters,
-                responseType: 'blob',
-            })
-            const url = window.URL.createObjectURL(response.data)
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', 'reporte_ventas.xlsx')
-            document.body.appendChild(link)
-            link.click()
-        } catch (err) {
-            alert('Error al exportar el reporte')
         } finally {
             setIsLoading(false)
         }
@@ -125,34 +124,68 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
         fetchData()
     }, [dateRange, selectedSeller, selectedClient])
 
-    // Estadísticas
-    const totalSales = useMemo(() => salesData.reduce((sum, item) => sum + item.totalAmount, 0), [salesData])
-    const totalQuantity = useMemo(() => salesData.reduce((sum, item) => sum + item.quantity, 0), [salesData])
-    const averageTicket = useMemo(() => salesData.length ? totalSales / salesData.length : 0, [salesData, totalSales])
+    const handleDateChange = (range?: DateRange) => {
+        if (range?.from && range?.to) {
+            const adjustedFrom = new Date(range.from)
+            adjustedFrom.setHours(0, 0, 0, 0)
+
+            const adjustedTo = new Date(range.to)
+            adjustedTo.setHours(23, 59, 59, 999)
+
+            setDateRange({
+                from: adjustedFrom,
+                to: adjustedTo
+            })
+        }
+    }
+    const DailySalesTable = () => (
+        <div className="md:hidden space-y-2">
+            <div className="overflow-x-auto">
+                <table className="w-full">
+                    <thead>
+                        <tr className="text-left border-b">
+                            <th className="p-2">Fecha</th>
+                            <th className="p-2">Ventas</th>
+                            <th className="p-2 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {chartData.map((day, index) => (
+                            <tr key={index} className="border-b">
+                                <td className="p-2">{day.formattedDate}</td>
+                                <td className="p-2">{day.quantity}</td>
+                                <td className="p-2 text-right">{formatCurrency(day.total)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
 
     return (
         <div className="space-y-4 p-2 pb-20">
-            {/* Filtros */}
             <div className="flex flex-col gap-2">
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                     <ClientSearch
                         clients={clients}
                         selectedClient={selectedClient}
-                        onSelect={(client) => {
-                            setSelectedClient(client)
-                            setClientSearchQuery('')
-                        }}
+                        onSelect={setSelectedClient}
                         searchQuery={clientSearchQuery}
                         setSearchQuery={setClientSearchQuery}
                         isLoading={false}
                     />
 
-                    <Select value={selectedSeller} onValueChange={setSelectedSeller}>
+                    <Select
+                        value={selectedSeller}
+                        onValueChange={setSelectedSeller}
+                        disabled={isMember}
+                    >
                         <SelectTrigger className="h-12 w-full">
                             <SelectValue placeholder="Seleccionar vendedor" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todos los vendedores</SelectItem>
+                            {!isMember && <SelectItem value="all">Todos</SelectItem>}
                             {sellers.map(seller => (
                                 <SelectItem key={seller.id} value={seller.id}>
                                     {seller.name}
@@ -163,23 +196,9 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
 
                     <DateRangePicker
                         date={dateRange}
-                        onDateChange={setDateRange}
-                        className=""
+                        onDateChange={handleDateChange}
                     />
                 </div>
-
-                <Button
-                    onClick={handleExport}
-                    disabled={isLoading}
-                    className="h-12 w-full"
-                >
-                    {isLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <Download className="mr-2 h-4 w-4" />
-                    )}
-                    Exportar Reporte
-                </Button>
             </div>
 
             {error && (
@@ -188,51 +207,34 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
                 </div>
             )}
 
-            {/* Estadísticas */}
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                <StatCard
-                    title="Ventas Totales"
-                    value={formatCurrency(totalSales)}
-                    loading={isLoading}
-                />
-                <StatCard
-                    title="Cantidad Total"
-                    value={totalQuantity.toLocaleString('es-PE')}
-                    loading={isLoading}
-                />
-                <StatCard
-                    title="Ticket Promedio"
-                    value={formatCurrency(averageTicket)}
-                    loading={isLoading}
-                />
-                <StatCard
-                    title="Total Ventas"
-                    value={salesData.length.toLocaleString('es-PE')}
-                    loading={isLoading}
-                />
+                <StatCard title="Ventas Totales" value={formatCurrency(totalSales)} loading={isLoading} />
+                <StatCard title="Cantidad Total Ventas" value={totalQuantity.toLocaleString('es-PE')} loading={isLoading} />
+                <StatCard title="Valor Promedio" value={formatCurrency(averageTicket)} loading={isLoading} />
+
             </div>
 
-            {/* Gráfico */}
-            <Card className="shadow-sm">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Ventas por Día</CardTitle>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Ventas Diarias</CardTitle>
                 </CardHeader>
-                <CardContent className="px-0">
-                    <div className="h-[280px] sm:h-[320px]">
-                        {isLoading ? (
-                            <Skeleton className="h-full w-full" />
-                        ) : (
+                <CardContent>
+                    {isLoading ? (
+                        <Skeleton className="h-64 w-full" />
+                    ) : isMobile ? (
+                        <DailySalesTable />
+                    ) : (
+                        <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis
-                                        dataKey="date"
+                                        dataKey="dayOfMonth"
                                         tick={{ fontSize: 12 }}
-                                        tickFormatter={(date) => formatChartDate(new Date(date), window.innerWidth < 768)}
-                                        interval={window.innerWidth < 768 ? 2 : 0}
+                                        interval={0}
                                     />
                                     <YAxis
-                                        width={75}
+                                        width={80}
                                         tickFormatter={value => `S/${value}`}
                                         tick={{ fontSize: 12 }}
                                     />
@@ -240,33 +242,69 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
                                         content={({ payload, label }) => (
                                             <CustomTooltip
                                                 payload={payload}
-                                                label={formatChartDate(new Date(label), false)}
+                                                label={`Día ${label}`}
                                             />
                                         )}
                                     />
-                                    <Bar
+                                    <Line
+                                        type="monotone"
                                         dataKey="total"
-                                        fill="currentColor"
-                                        className="text-primary"
-                                        radius={[4, 4, 0, 0]}
+                                        stroke="#2563eb"
+                                        strokeWidth={2}
+                                        dot={{ r: 4 }}
                                     />
-                                </BarChart>
+                                </LineChart>
                             </ResponsiveContainer>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
-            {/* Vistas Responsivas */}
-            <MobileSalesView salesByUser={salesByUser} salesData={salesData} isLoading={isLoading} />
-            <DesktopSalesView salesByUser={salesByUser} salesData={salesData} isLoading={isLoading} />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Ventas por Vendedor</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Vendedor</TableHead>
+                                    <TableHead className="text-right">Ventas</TableHead>
+                                    <TableHead className="text-right">Total</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading ? (
+                                    Array(3).fill(0).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-6 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-20 ml-auto" /></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    salesByUser.map((user) => (
+                                        <TableRow key={user.userId}>
+                                            <TableCell>{user.userName}</TableCell>
+                                            <TableCell className="text-right">{user.quantity}</TableCell>
+                                            <TableCell className="text-right">
+                                                {formatCurrency(user.totalAmount)}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     )
 }
 
-// Componentes auxiliares
 const StatCard = ({ title, value, loading }: { title: string; value: string; loading: boolean }) => (
-    <Card className="p-3 shadow-sm">
+    <Card className="p-3">
         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
         {loading ? (
             <Skeleton className="h-7 w-3/4 mt-1" />
@@ -277,7 +315,7 @@ const StatCard = ({ title, value, loading }: { title: string; value: string; loa
 )
 
 const CustomTooltip = ({ payload, label }: any) => {
-    if (!payload || payload.length === 0) return null
+    if (!payload?.[0]) return null
     return (
         <div className="bg-background p-3 rounded-lg shadow-lg border">
             <p className="font-medium">{label}</p>
@@ -286,179 +324,3 @@ const CustomTooltip = ({ payload, label }: any) => {
         </div>
     )
 }
-
-const MobileSalesView = ({ salesByUser, salesData, isLoading }: {
-    salesByUser: Array<{ userId: string; userName: string; quantity: number; totalAmount: number }>
-    salesData: SaleReportDTO[]
-    isLoading: boolean
-}) => (
-    <div className="md:hidden space-y-4">
-        <Card className="shadow-sm">
-            <CardHeader>
-                <CardTitle className="text-lg">Ventas por Vendedor</CardTitle>
-            </CardHeader>
-            <CardContent className="px-0">
-                <div className="space-y-4">
-                    {isLoading ? (
-                        Array(3).fill(0).map((_, i) => (
-                            <div key={i} className="px-4">
-                                <Skeleton className="h-16 w-full" />
-                            </div>
-                        ))
-                    ) : (
-                        salesByUser.map((user) => (
-                            <Card key={user.userId} className="mx-2 mb-2 p-3">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <div className="font-medium">{user.userName}</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {user.quantity} ventas
-                                        </div>
-                                    </div>
-                                    <div className="font-medium text-primary">
-                                        {formatCurrency(user.totalAmount)}
-                                    </div>
-                                </div>
-                            </Card>
-                        ))
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-            <CardHeader>
-                <CardTitle className="text-lg">Detalle de Ventas</CardTitle>
-            </CardHeader>
-            <CardContent className="px-0">
-                <div className="space-y-2">
-                    {isLoading ? (
-                        Array(5).fill(0).map((_, i) => (
-                            <Skeleton key={i} className="h-16 w-full mx-2" />
-                        ))
-                    ) : (
-                        salesData.map((sale) => (
-                            <Card key={sale.id} className="mx-2 mb-2 p-3">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <div className="font-medium">
-                                            {new Date(sale.date).toLocaleDateString('es-PE')}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground truncate">
-                                            {sale.clientName}
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="font-medium">{formatCurrency(sale.totalAmount)}</div>
-
-                                    </div>
-                                </div>
-                            </Card>
-                        ))
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    </div>
-)
-
-const DesktopSalesView = ({ salesByUser, salesData, isLoading }: {
-    salesByUser: Array<{ userId: string; userName: string; quantity: number; totalAmount: number }>
-    salesData: SaleReportDTO[]
-    isLoading: boolean
-}) => (
-    <div className="hidden md:block space-y-4">
-        <Card className="shadow-sm">
-            <CardHeader>
-                <CardTitle className="text-lg">Ventas por Vendedor</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Vendedor</TableHead>
-                                <TableHead className="text-right">Ventas</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                Array(3).fill(0).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-20 ml-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                salesByUser.map((user) => (
-                                    <TableRow key={user.userId}>
-                                        <TableCell className="font-medium">{user.userName}</TableCell>
-                                        <TableCell className="text-right">{user.quantity}</TableCell>
-                                        <TableCell className="text-right font-medium">
-                                            {formatCurrency(user.totalAmount)}
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-            <CardHeader>
-                <CardTitle className="text-lg">Detalle Completo</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Fecha</TableHead>
-                                <TableHead>Cliente</TableHead>
-                                <TableHead>Vendedor</TableHead>
-                                <TableHead className="text-right">Cant</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                                <TableHead>Método</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                Array(5).fill(0).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-28" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-16 ml-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                salesData.map((sale) => (
-                                    <TableRow key={sale.id}>
-                                        <TableCell>{new Date(sale.date).toLocaleDateString('es-PE')}</TableCell>
-                                        <TableCell className="max-w-[120px] truncate">
-                                            {sale.clientName}
-                                        </TableCell>
-                                        <TableCell className="max-w-[100px] truncate">
-                                            {sale.userName}
-                                        </TableCell>
-                                        <TableCell className="text-right">{sale.quantity}</TableCell>
-                                        <TableCell className="text-right">
-                                            {formatCurrency(sale.totalAmount)}
-                                        </TableCell>
-                                        <TableCell>{sale.paymentMethod}</TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
-    </div>
-)
