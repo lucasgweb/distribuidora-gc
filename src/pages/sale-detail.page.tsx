@@ -120,7 +120,7 @@ export function SaleDetail() {
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Nombre: ${sale.client.name}`, margin, yPos);
             yPos += 5;
-            pdf.text(`Documento: ${sale.client.dni}`, margin, yPos);
+            pdf.text(`Documento: ${sale.client.document}`, margin, yPos);
             yPos += 5;
             pdf.text(`Teléfono: ${sale.client.phone || "N/A"}`, margin, yPos);
             yPos += 12;
@@ -303,7 +303,7 @@ export function SaleDetail() {
                                 </p>
                                 <p>
                                     <span className="text-gray-500">Documento:</span>{" "}
-                                    {sale.client.dni}
+                                    {sale.client.document}
                                 </p>
                                 <p>
                                     <span className="text-gray-500">Teléfono:</span>{" "}

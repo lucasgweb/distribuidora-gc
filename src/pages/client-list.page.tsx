@@ -119,7 +119,7 @@ export function ClientListPage() {
                                     <div className="mt-2 text-sm space-y-1">
                                         <div className="flex items-center gap-2">
                                             <span className="text-gray-500">DNI/RUC:</span>
-                                            <span>{client.dni}</span>
+                                            <span>{client.document || "N/A"}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-gray-500">Teléfono:</span>

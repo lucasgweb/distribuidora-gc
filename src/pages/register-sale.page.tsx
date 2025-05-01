@@ -17,7 +17,7 @@ import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
 import { ClientDTO } from '../dtos/client.dto';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import { X, Plus, ArrowUpCircle, ArrowDownCircle, Loader2 } from 'lucide-react';
+import { X, Plus, ArrowUpCircle, ArrowDownCircle, Loader2, CheckCircle } from 'lucide-react';
 import { listClients } from '../services/clients.service';
 import { listProducts } from '../services/products.service';
 import { ProductDTO } from '../dtos/product.dto';
@@ -192,15 +192,35 @@ export function RegisterSalePage() {
                     {/* Información principal */}
                     <div className="space-y-4">
                         <h2 className="text-md font-semibold">Información principal</h2>
-                        <Label>Cliente</Label>
-                        <ClientSearch
-                            clients={clients}
-                            selectedClient={selectedClient || undefined}
-                            onSelect={setSelectedClient}
-                            searchQuery={searchQuery}
-                            setSearchQuery={setSearchQuery}
-                            isLoading={isLoadingClients}
-                        />
+
+                        <div className="space-y-2">
+                            <Label>Cliente</Label>
+                            <ClientSearch
+                                clients={clients}
+                                selectedClient={selectedClient || undefined}
+                                onSelect={setSelectedClient}
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                isLoading={isLoadingClients}
+                            />
+
+                            {selectedClient && (
+                                <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary rounded-lg">
+                                    <CheckCircle className="h-4 w-4 text-primary" />
+                                    <span className="text-sm ">
+                                        Cliente seleccionado: {selectedClient.name}
+                                    </span>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="ml-auto text-red-600 hover:bg-red-50"
+                                        onClick={() => setSelectedClient(null)}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Información de venta */}

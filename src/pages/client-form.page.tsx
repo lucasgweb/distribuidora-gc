@@ -65,7 +65,7 @@ export function ClientFormPage() {
     const [client, setClient] = useState<ClientDTO>({
         id: '',
         name: '',
-        dni: '',
+        document: '',
         phone: '',
         email: '',
         address: '',
@@ -98,9 +98,13 @@ export function ClientFormPage() {
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        // Validar DNI/RUC
-        if (!isValidDNIorRUC(client.dni)) {
-            newErrors.dni = 'Ingrese un DNI válido (8 dígitos) o RUC válido (11 dígitos)';
+
+        if (client.document) {
+
+            // Validar DNI/RUC
+            if (!isValidDNIorRUC(client.document)) {
+                newErrors.dni = 'Ingrese un DNI válido (8 dígitos) o RUC válido (11 dígitos)';
+            }
         }
 
         // Validar teléfono peruano (+51)
@@ -155,7 +159,7 @@ export function ClientFormPage() {
 
     const handleDNIChange = (value: string) => {
         const onlyNums = value.replace(/\D/g, '');
-        setClient({ ...client, dni: onlyNums });
+        setClient({ ...client, document: onlyNums });
         if (isValidDNIorRUC(onlyNums)) {
             setErrors({ ...errors, dni: '' });
         }
@@ -188,7 +192,7 @@ export function ClientFormPage() {
                     <div className="space-y-4">
                         <div className="grid gap-4">
                             <div>
-                                <Label>Nombre Completo/Razón Social</Label>
+                                <Label>Nombre Completo<span className='text-red-500'>*</span></Label>
                                 <Input
                                     required
                                     value={client.name}
@@ -200,8 +204,7 @@ export function ClientFormPage() {
                                 <div>
                                     <Label>DNI/RUC</Label>
                                     <Input
-                                        required
-                                        value={client.dni}
+                                        value={client.document}
                                         onChange={e => handleDNIChange(e.target.value)}
                                         placeholder="DNI (8 dígitos) o RUC (11 dígitos)"
                                         maxLength={11}
@@ -209,7 +212,7 @@ export function ClientFormPage() {
                                     {errors.dni && <p className="text-red-500 text-sm mt-1">{errors.dni}</p>}
                                 </div>
                                 <div>
-                                    <Label>Teléfono</Label>
+                                    <Label>Teléfono<span className='text-red-500'>*</span></Label>
                                     <Input
                                         required
                                         value={client.phone}

@@ -67,7 +67,7 @@ export function SaleFinished() {
             pdf.text("Información del Cliente", margin, y); y += 7;
             pdf.setFontSize(normalSize).setFont('helvetica', 'normal');
             pdf.text(`Nombre: ${sale.client.name}`, margin, y); y += 5;
-            pdf.text(`Documento: ${sale.client.dni}`, margin, y); y += 5;
+            pdf.text(`Documento: ${sale.client.document}`, margin, y); y += 5;
             pdf.text(`Teléfono: ${sale.client.phone || 'N/A'}`, margin, y); y += 12;
 
             // Venta info
@@ -192,7 +192,7 @@ export function SaleFinished() {
                             <span className="font-medium text-gray-600">Nombre:</span> {sale.client.name}
                         </div>
                         <div className="flex justify-between">
-                            <span className="font-medium text-gray-600">Documento:</span> {sale.client.dni}
+                            <span className="font-medium text-gray-600">Documento:</span> {sale.client.document}
                         </div>
                         <div className="flex justify-between">
                             <span className="font-medium text-gray-600">Teléfono:</span> {sale.client.phone}
