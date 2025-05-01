@@ -30,7 +30,7 @@ export function SaleCard({ sale }: SaleCardProps) {
     return (
         <Card
             className="cursor-pointer hover:bg-white transition-colors p-1 hover:shadow overflow-hidden bg-white"
-            onClick={() => navigate(`/sale-detail/${sale.id}`)}
+            onClick={() => navigate(`/sale-finished/${sale.id}`)}
         >
             <CardContent className="p-0">
                 <div className="flex flex-col">
