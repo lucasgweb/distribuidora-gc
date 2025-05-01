@@ -225,7 +225,7 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
 
             <Accordion type="multiple" className="space-y-2">
                 <AccordionItem value="daily-sales">
-                    <AccordionTrigger>Ventas Diarias</AccordionTrigger>
+                    <AccordionTrigger className='text-bold text-md'>Ventas Diarias</AccordionTrigger>
                     <AccordionContent>
                         <Card>
                             <CardContent>
@@ -252,7 +252,7 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
                 </AccordionItem>
 
                 <AccordionItem value="sales-by-user">
-                    <AccordionTrigger>Ventas por Vendedor</AccordionTrigger>
+                    <AccordionTrigger className='text-bold text-md'>Ventas por Vendedor</AccordionTrigger>
                     <AccordionContent>
                         <Card>
                             <CardContent>

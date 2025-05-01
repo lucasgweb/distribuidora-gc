@@ -25,6 +25,7 @@ import { CreateSaleDTO } from '../dtos/sale.dto';
 import { createSale } from '../services/sales.service';
 import { toast } from 'sonner';
 import { MoneyInput } from '../components/ui/money-input';
+import { formatCurrency } from '../utils/format-currency';
 
 interface OrderItem {
     item: ProductDTO;
@@ -240,21 +241,27 @@ export function RegisterSalePage() {
                         ) : (
                             <div className="divide-y divide-gray-100 border border-gray-100 rounded-lg">
                                 {orderItems.map((oi, idx) => (
-                                    <div key={idx} className="py-2 px-3 hover:bg-gray-50 flex justify-between items-center">
+                                    <div key={idx} className="py-2 px-3 hover:bg-gray-50 flex justify-between text-[0.8em] items-center">
                                         <div>
                                             <span className="font-medium">{oi.item.name}</span>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <ArrowUpCircle className="w-4 h-4 text-green-600" />
-                                            <span>{oi.sold}</span>
-                                            <ArrowDownCircle className="w-4 h-4 text-red-600" />
-                                            <span>{oi.returned}</span>
+                                            <div className='flex items-center gap-1'>
+
+                                                <ArrowUpCircle className="w-4 h-4 text-green-600" />
+                                                <span>{oi.sold}</span>
+                                            </div>
+                                            <div className='flex items-center gap-1'>
+
+                                                <ArrowDownCircle className="w-4 h-4 text-red-600" />
+                                                <span>{oi.returned}</span>
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="font-medium">
-                                                ${(oi.negotiatedPrice ?? oi.item.basePrice) * oi.sold -
-                                                    (oi.negotiatedCylinderPrice ?? oi.item.emptyCylinderPrice) * oi.returned}
-                                                .00
+                                                {formatCurrency((oi.negotiatedPrice ?? oi.item.basePrice) * oi.sold -
+                                                    (oi.negotiatedCylinderPrice ?? oi.item.emptyCylinderPrice) * oi.returned)}
+
                                             </span>
                                             <Button variant="ghost" size="icon" onClick={() => removeItem(idx)}>
                                                 <X className="w-4 h-4 text-destructive" />
