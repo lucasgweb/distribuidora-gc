@@ -13,6 +13,7 @@ import {
 import { FullScreenLoader } from '../components/full-screen-loader';
 import { Loader2 } from 'lucide-react';
 import { MoneyInput } from '../components/ui/money-input';
+import { useAuth } from '../hooks/use-auth.hook';
 
 type EditableProduct = {
     name: string;
@@ -26,6 +27,8 @@ export function ProductDetailsPage() {
     const { id } = useParams();
     const isNew = !id || id === 'new';
     const navigate = useNavigate();
+
+    const { user } = useAuth()
 
     const [product, setProduct] = useState<EditableProduct>({
         name: '',
@@ -163,75 +166,82 @@ export function ProductDetailsPage() {
                             </div>
                         </div>
 
-                        {/* Negociaciones */}
-                        <div className="space-y-4">
-                            <div>
-                                <Label>Permitir negociación de precio</Label>
-                                <RadioGroup
-                                    value={String(product.allowPriceNegotiation)}
-                                    onValueChange={value =>
-                                        setProduct(prev => ({
-                                            ...prev,
-                                            allowPriceNegotiation: value === 'true',
-                                        }))
-                                    }
-                                    className="flex gap-4"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <RadioGroupItem value="true" id="price-yes" />
-                                        <Label htmlFor="price-yes">Sí</Label>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <RadioGroupItem value="false" id="price-no" />
-                                        <Label htmlFor="price-no">No</Label>
-                                    </div>
-                                </RadioGroup>
-                            </div>
+                        {
+                            user?.role !== 'MEMBER' && (
+                                <>
+                                    {/* Negociaciones */}
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>Permitir negociación de precio</Label>
+                                            <RadioGroup
+                                                value={String(product.allowPriceNegotiation)}
+                                                onValueChange={value =>
+                                                    setProduct(prev => ({
+                                                        ...prev,
+                                                        allowPriceNegotiation: value === 'true',
+                                                    }))
+                                                }
+                                                className="flex gap-4"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <RadioGroupItem value="true" id="price-yes" />
+                                                    <Label htmlFor="price-yes">Sí</Label>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <RadioGroupItem value="false" id="price-no" />
+                                                    <Label htmlFor="price-no">No</Label>
+                                                </div>
+                                            </RadioGroup>
+                                        </div>
 
-                            <div>
-                                <Label>Permitir negociación de balón vacío</Label>
-                                <RadioGroup
-                                    value={String(product.allowCylinderNegotiation)}
-                                    onValueChange={value =>
-                                        setProduct(prev => ({
-                                            ...prev,
-                                            allowCylinderNegotiation: value === 'true',
-                                        }))
-                                    }
-                                    className="flex gap-4"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <RadioGroupItem value="true" id="cylinder-yes" />
-                                        <Label htmlFor="cylinder-yes">Sí</Label>
+                                        <div>
+                                            <Label>Permitir negociación de balón vacío</Label>
+                                            <RadioGroup
+                                                value={String(product.allowCylinderNegotiation)}
+                                                onValueChange={value =>
+                                                    setProduct(prev => ({
+                                                        ...prev,
+                                                        allowCylinderNegotiation: value === 'true',
+                                                    }))
+                                                }
+                                                className="flex gap-4"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <RadioGroupItem value="true" id="cylinder-yes" />
+                                                    <Label htmlFor="cylinder-yes">Sí</Label>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <RadioGroupItem value="false" id="cylinder-no" />
+                                                    <Label htmlFor="cylinder-no">No</Label>
+                                                </div>
+                                            </RadioGroup>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <RadioGroupItem value="false" id="cylinder-no" />
-                                        <Label htmlFor="cylinder-no">No</Label>
-                                    </div>
-                                </RadioGroup>
-                            </div>
-                        </div>
 
-                        {/* Botones */}
-                        <div className="flex gap-2 mt-6">
-                            <Button
-                                disabled={isSavingProduct}
-                                type="button"
-                                variant="outline"
-                                className="flex-1"
-                                onClick={() => navigate('/products')}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                type="submit"
-                                className="flex-1"
-                                disabled={isSavingProduct}
-                            >
-                                {isSavingProduct && <Loader2 className="animate-spin" />}
-                                {isNew ? 'Crear Producto' : 'Guardar Cambios'}
-                            </Button>
-                        </div>
+                                    {/* Botones */}
+                                    <div className="flex gap-2 mt-6">
+                                        <Button
+                                            disabled={isSavingProduct}
+                                            type="button"
+                                            variant="outline"
+                                            className="flex-1"
+                                            onClick={() => navigate('/products')}
+                                        >
+                                            Cancelar
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            className="flex-1"
+                                            disabled={isSavingProduct}
+                                        >
+                                            {isSavingProduct && <Loader2 className="animate-spin" />}
+                                            {isNew ? 'Crear Producto' : 'Guardar Cambios'}
+                                        </Button>
+                                    </div>
+                                </>
+                            )
+                        }
+
                     </div>
                 </form>
             </div>
