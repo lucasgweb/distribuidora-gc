@@ -205,7 +205,7 @@ export function RegisterSalePage() {
                             />
 
                             {selectedClient && (
-                                <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary rounded-lg">
+                                <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary rounded-xl">
                                     <CheckCircle className="h-4 w-4 text-primary" />
                                     <span className="text-sm ">
                                         Cliente seleccionado: {selectedClient.name}
