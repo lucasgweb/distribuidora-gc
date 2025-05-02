@@ -13,7 +13,8 @@ import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import {
     X, Plus, ArrowUpCircle, ArrowDownCircle, Loader2,
     CheckCircle, Search, CheckIcon, Info, ShoppingCart,
-    Trash2
+    Trash2,
+    Coins
 } from 'lucide-react';
 import { listClients } from '../services/clients.service';
 import { listProducts } from '../services/products.service';
@@ -372,7 +373,7 @@ export function RegisterSalePage() {
                     <Card>
                         <CardHeader className='-mb-4'>
                             <CardTitle className="text-lg flex items-center gap-2">
-                                <ShoppingCart className="h-5 w-5 text-primary" />
+                                <Coins className="h-5 w-5 text-primary" />
                                 Método de pago
                             </CardTitle>
                         </CardHeader>
