@@ -9,7 +9,7 @@ export function useHome() {
   const user = state?.user
 
   // Estados para dados do dashboard
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const [dashboardData, setDashboardData] = useState<DashboardData>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isError, setIsError] = useState<boolean>(false)
   const [error, setError] = useState<unknown>(null)
@@ -24,7 +24,6 @@ export function useHome() {
         const data = await getDashboardData()
         setDashboardData(data)
       } catch (err) {
-        setIsError(true)
         setError(err)
       } finally {
         setIsLoading(false)

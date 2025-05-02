@@ -10,6 +10,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { listClients } from '../services/clients.service';
 import { formatPhoneNumber } from 'react-phone-number-input';
 import { useDebounce } from 'use-debounce';
+import { BottomNav } from '../components/bottom-nav';
 
 const PAGE_SIZE = 10;
 
@@ -149,118 +150,115 @@ export function ClientListPage() {
     };
 
     return (
-        <div className="flex px-4 flex-col min-h-screen">
-            <Header title="Clientes" onBack={() => navigate('/')} />
+        <>
+            <div className="flex px-4 flex-col min-h-screen">
+                <Header title="Clientes" onBack={() => navigate('/')} />
 
-            <div className="pt-4 pb-4 max-w-3xl mx-auto w-full">
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex flex-1 relative">
-                        <Input
-                            placeholder="Buscar por nombre, DNI o teléfono..."
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                        />
+                <div className="pt-4 pb-4 max-w-3xl mx-auto w-full">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-1 relative">
+                            <Input
+                                placeholder="Buscar por nombre, DNI o teléfono..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                            />
+                        </div>
+
+                        <Button onClick={() => navigate('/clients/new')}>
+                            <Plus className="w-4 h-4 " />
+                            Nuevo
+                        </Button>
                     </div>
 
-                    <Button onClick={() => navigate('/clients/new')}>
-                        <Plus className="w-4 h-4 " />
-                        Nuevo
-                    </Button>
-                </div>
+                    <div className="mt-4 space-y-3">
+                        {/* Mostrar skeletons durante la carga inicial o búsqueda */}
+                        {(loading && page === 1) || (isSearching && clients.length === 0) ? (
+                            renderClientSkeletons()
+                        ) : null}
 
-                <div className="mt-4 space-y-3">
-                    {/* Mostrar skeletons durante la carga inicial o búsqueda */}
-                    {(loading && page === 1) || (isSearching && clients.length === 0) ? (
-                        renderClientSkeletons()
-                    ) : null}
+                        {/* Mostrar clientes cuando están cargados */}
+                        {clients.map(client => (
+                            <Card
+                                key={client.id}
+                                className="cursor-pointer hover:bg-gray-50 transition-colors group"
+                                onClick={() => navigate(`/clients/${client.id}`)}
+                            >
+                                <CardContent >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-medium text-lg text-gray-900">
+                                                    {client.name}
+                                                </h3>
+                                            </div>
+                                            <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <IdCard className="h-4 w-4 text-blue-600" />
+                                                    <span>
+                                                        {client.document || <span className="text-gray-400">Sin documento</span>}
+                                                    </span>
+                                                </div>
 
-                    {/* Mostrar clientes cuando están cargados */}
-                    {clients.map(client => (
-                        <Card
-                            key={client.id}
-                            className="cursor-pointer hover:bg-gray-50 transition-colors group"
-                            onClick={() => navigate(`/clients/${client.id}`)}
-                        >
-                            <CardContent >
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-medium text-lg text-gray-900">
-                                                {client.name}
-                                            </h3>
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <Phone className="h-4 w-4 text-green-600" />
+                                                    <span>
+                                                        {client.phone ? formatPhoneNumber(client.phone) : <span className="text-gray-400">Sin teléfono</span>}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {(client.email || client.address) && (
+                                                <div className="mt-3 space-y-1 text-sm text-gray-500">
+                                                    {client.email && (
+                                                        <div className="flex items-center gap-2">
+                                                            <Mail className="h-4 w-4" />
+                                                            <span>{client.email}</span>
+                                                        </div>
+                                                    )}
+                                                    {client.address && (
+                                                        <div className="flex items-center gap-2">
+                                                            <MapPin className="h-4 w-4" />
+                                                            <span className="truncate">{client.address}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <IdCard className="h-4 w-4 text-blue-600" />
-                                                <span>
-                                                    {client.document || <span className="text-gray-400">Sin documento</span>}
-                                                </span>
-                                            </div>
 
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <Phone className="h-4 w-4 text-green-600" />
-                                                <span>
-                                                    {client.phone ? formatPhoneNumber(client.phone) : <span className="text-gray-400">Sin teléfono</span>}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {(client.email || client.address) && (
-                                            <div className="mt-3 space-y-1 text-sm text-gray-500">
-                                                {client.email && (
-                                                    <div className="flex items-center gap-2">
-                                                        <Mail className="h-4 w-4" />
-                                                        <span>{client.email}</span>
-                                                    </div>
-                                                )}
-                                                {client.address && (
-                                                    <div className="flex items-center gap-2">
-                                                        <MapPin className="h-4 w-4" />
-                                                        <span className="truncate">{client.address}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-700 transition-colors" />
                                     </div>
+                                </CardContent>
+                            </Card>
+                        ))}
 
-                                    <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-700 transition-colors" />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-
-                    {/* Mostrar skeleton al cargar más páginas */}
-                    {loading && page > 1 && (
-                        <div className="flex justify-center py-4">
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        </div>
-                    )}
-
-                    <div ref={observerRef} className="h-6" />
-
-                    {!hasMore && clients.length > 0 && (
-                        <div className="text-center py-4 text-gray-500">
-                            <p>Has llegado al final de la lista</p>
-                        </div>
-                    )}
-
-                    {!loading && !isSearching && clients.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <div className="bg-gray-100 rounded-full p-4 mb-3">
-                                <IdCard className="h-8 w-8 text-gray-400" />
+                        {/* Mostrar skeleton al cargar más páginas */}
+                        {loading && page > 1 && (
+                            <div className="flex justify-center py-4">
+                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-800">
-                                {debouncedSearch ? 'Sin resultados' : 'Sin clientes registrados'}
-                            </h3>
-                            <p className="text-sm text-gray-500 mt-1">
-                                {debouncedSearch
-                                    ? 'Intenta con otros términos de búsqueda'
-                                    : 'Presiona el botón "+" para crear un nuevo cliente'}
-                            </p>
-                        </div>
-                    )}
+                        )}
+
+                        <div ref={observerRef} className="h-6" />
+
+                        {!loading && !isSearching && clients.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <div className="bg-gray-100 rounded-full p-4 mb-3">
+                                    <IdCard className="h-8 w-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-800">
+                                    {debouncedSearch ? 'Sin resultados' : 'Sin clientes registrados'}
+                                </h3>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    {debouncedSearch
+                                        ? 'Intenta con otros términos de búsqueda'
+                                        : 'Presiona el botón "+" para crear un nuevo cliente'}
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+            <BottomNav />
+        </>
     );
 }

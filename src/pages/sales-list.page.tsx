@@ -7,10 +7,35 @@ import { listSales } from '../services/sales.service';
 import { SaleDTO } from '../dtos/sale.dto';
 import { BottomNav } from '../components/bottom-nav';
 import { SaleCard } from '../components/sale-card';
-import { FullScreenLoader } from '../components/full-screen-loader';
+import { Skeleton } from '../components/ui/skeleton';
 import { useDebounce } from 'use-debounce';
 
 const PAGE_SIZE = 10;
+
+// Skeleton para la tarjeta de venta
+const SaleCardSkeleton = () => {
+    return (
+        <div className="p-4 bg-white rounded-lg border mb-3">
+            <div className="flex items-start justify-between">
+                <div className="space-y-2 flex-1">
+                    <div className="flex justify-between">
+                        <Skeleton className="h-5 w-40" />
+                        <Skeleton className="h-5 w-24" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-4 rounded-full" />
+                        <Skeleton className="h-4 w-32" />
+                    </div>
+                    <div className="flex gap-2">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-24" />
+                    </div>
+                </div>
+                <Skeleton className="h-6 w-6 rounded-full" />
+            </div>
+        </div>
+    );
+};
 
 export function SalesListPage() {
     const navigate = useNavigate();
@@ -117,6 +142,13 @@ export function SalesListPage() {
         };
     }, []);
 
+    // Función para renderizar los skeletons
+    const renderSaleSkeletons = (count = 5) => {
+        return Array(count).fill(0).map((_, index) => (
+            <SaleCardSkeleton key={`skeleton-${index}`} />
+        ));
+    };
+
     return (
         <>
             <div className="flex px-4 flex-col min-h-screen mb-16">
@@ -138,19 +170,18 @@ export function SalesListPage() {
                     </div>
 
                     <div className="mt-4 space-y-3">
-                        {isSearching && sales.length === 0 && (
-                            <div className="flex flex-col items-center py-6">
-                                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-                                <span className="text-sm text-gray-600">Buscando ventas...</span>
-                            </div>
-                        )}
+                        {/* Mostrar skeletons durante la búsqueda */}
+                        {isSearching && sales.length === 0 && renderSaleSkeletons(3)}
 
+                        {/* Mostrar skeletons durante la carga inicial */}
+                        {loading && page === 1 && !isSearching && renderSaleSkeletons(5)}
+
+                        {/* Mostrar ventas cuando están cargadas */}
                         {sales.map(sale => (
                             <SaleCard sale={sale} key={sale.id} />
                         ))}
 
-                        {loading && page === 1 && !isSearching && <FullScreenLoader />}
-
+                        {/* Indicador de carga para paginación */}
                         {loading && page > 1 && (
                             <div className="flex flex-col items-center py-4">
                                 <Loader2 className="h-6 w-6 animate-spin text-primary mb-2" />
@@ -167,7 +198,7 @@ export function SalesListPage() {
                             </div>
                         )}
 
-                        {!loading && sales.length === 0 && (
+                        {!loading && !isSearching && sales.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <div className="bg-gray-100 rounded-full p-4 mb-3">
                                     <CreditCard className="h-8 w-8 text-gray-400" />
