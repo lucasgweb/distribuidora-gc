@@ -211,7 +211,6 @@ export function RegisterSalePage() {
                     };
                     return newItems;
                 });
-                toast.success('Item atualizado');
             }
             // Adicionar novo item
             else {
@@ -225,7 +224,6 @@ export function RegisterSalePage() {
                         negotiatedCylinderPrice,
                     },
                 ]);
-                toast.success('Item adicionado');
 
                 // Adicionar aos produtos recentes se não estiver lá
                 if (!recentlyUsedProducts.some(p => p.id === prod.id)) {
@@ -245,7 +243,6 @@ export function RegisterSalePage() {
 
     const removeItem = (i: number) => {
         setOrderItems(prev => prev.filter((_, idx) => idx !== i));
-        toast.info('Item removido');
     };
 
     const calculateTotal = () =>
@@ -325,10 +322,10 @@ export function RegisterSalePage() {
                     onBack={() => navigate('/')}
                 />
 
-                <div className="space-y-6 mt-4">
+                <div className="space-y-4 mt-4">
                     {/* Información principal */}
                     <Card>
-                        <CardHeader className="pb-2">
+                        <CardHeader className='-mb-4'>
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <CheckCircle className="h-5 w-5 text-primary" />
                                 Cliente
@@ -336,8 +333,8 @@ export function RegisterSalePage() {
                         </CardHeader>
                         <CardContent>
                             {selectedClient ? (
-                                <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary rounded-lg">
-                                    <CheckCircle className="h-4 w-4 text-primary" />
+                                <div className="flex items-center gap-2 bg-primary/10 border border-primary rounded-xl py-3 px-2">
+                                    <CheckCircle className="h-4 w-4 text-primary " />
                                     <span className="font-medium">
                                         {selectedClient.name}
                                     </span>
@@ -374,7 +371,7 @@ export function RegisterSalePage() {
                     </Card>
 
                     <Card>
-                        <CardHeader className="pb-2">
+                        <CardHeader className='-mb-4'>
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <ShoppingCart className="h-5 w-5 text-primary" />
                                 Método de pago
@@ -423,7 +420,7 @@ export function RegisterSalePage() {
 
                     {/* Información de venta */}
                     <Card>
-                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <CardHeader className="-mb-4 flex flex-row items-center justify-between">
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <ShoppingCart className="h-5 w-5 text-primary" />
                                 Ítems ({orderItems.length})
@@ -459,12 +456,6 @@ export function RegisterSalePage() {
                                         >
                                             <div className="flex-1">
                                                 <span className="font-medium">{oi.item.name}</span>
-                                                {(oi.negotiatedPrice !== undefined &&
-                                                    oi.negotiatedPrice !== oi.item.basePrice) && (
-                                                        <Badge variant="outline" className="ml-2 text-xs">
-                                                            Precio negociado
-                                                        </Badge>
-                                                    )}
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <TooltipProvider>
@@ -530,9 +521,9 @@ export function RegisterSalePage() {
 
                             {orderItems.length > 0 && (
                                 <div className="mt-4 flex flex-col space-y-2">
-                                    <div className="flex justify-between items-center py-2 px-4 rounded-lg bg-primary/10 border border-primary mt-2 font-medium">
+                                    <div className="flex justify-between items-center py-2 px-4 rounded-lg mt-2 font-bold">
                                         <span>Total:</span>
-                                        <span className="text-xl text-primary">{formatCurrency(calculateTotal())}</span>
+                                        <span className="text-xl text-gray-950">{formatCurrency(calculateTotal())}</span>
                                     </div>
                                 </div>
                             )}
@@ -548,10 +539,10 @@ export function RegisterSalePage() {
                         Registrar Venta
                     </Button>
                 </div>
-            </div>
+            </div >
 
             {/* Dialog para agregar/editar artículo */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            < Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>
@@ -665,13 +656,6 @@ export function RegisterSalePage() {
                                             </span>
                                         </div>
                                     </div>
-
-                                    {(prod.allowPriceNegotiation || prod.allowCylinderNegotiation) && (
-                                        <div className="flex items-center gap-2 text-sm text-amber-600 mt-1">
-                                            <Info className="h-4 w-4" />
-                                            <span>Este producto permite negociación de precios</span>
-                                        </div>
-                                    )}
                                 </>
                             );
                         })()}
@@ -692,10 +676,10 @@ export function RegisterSalePage() {
                         </DialogFooter>
                     </div>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
 
             {/* Dialog para seleccionar producto */}
-            <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+            < Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen} >
                 <DialogContent className="max-w-md p-0">
                     <div className="p-4 pb-0">
                         <DialogTitle className="text-lg font-semibold mb-2">Seleccionar producto</DialogTitle>
@@ -750,10 +734,10 @@ export function RegisterSalePage() {
                         </Button>
                     </div>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
 
             {/* Dialog de confirmación de venta */}
-            <Dialog open={isConfirmationDialogOpen} onOpenChange={setIsConfirmationDialogOpen}>
+            < Dialog open={isConfirmationDialogOpen} onOpenChange={setIsConfirmationDialogOpen} >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Confirmar venta</DialogTitle>
@@ -807,7 +791,7 @@ export function RegisterSalePage() {
                         </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>
-        </div>
+            </Dialog >
+        </div >
     );
 }
