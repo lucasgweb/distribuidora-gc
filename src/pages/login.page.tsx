@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import LogoIcon from "../assets/logo-icon.png";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeClosed, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/use-auth.hook";
 import { toast } from "sonner"
@@ -11,10 +11,12 @@ export function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("eduardo@test.com");
     const [password, setPassword] = useState("contraseña123");
+    const [isLoading, setIsLoading] = useState(false)
     const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
+        setIsLoading(true)
         e.preventDefault();
         try {
             await login(email, password);
@@ -22,6 +24,8 @@ export function LoginPage() {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_err) {
             toast.error("Error al iniciar sesión, verifica tus credenciales")
+        } finally {
+            setIsLoading(false)
         }
     };
 
@@ -71,7 +75,10 @@ export function LoginPage() {
                 </div>
 
                 <Button className="w-full" type="submit">
-                    Iniciar sesión
+                    {isLoading ? (
+                        <Loader2 className="animate-spin text-white" />
+                    ) : ('Iniciar sesión')}
+
                 </Button>
                 <Link to='/register'>
                     <Button className="w-full mt-6 text-gray-900" variant="link" type="button">
@@ -79,6 +86,6 @@ export function LoginPage() {
                     </Button>
                 </Link>
             </form>
-        </div>
+        </div >
     );
 }

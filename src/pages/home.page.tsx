@@ -7,6 +7,7 @@ import { SalesByDayChart } from "../components/sales-by-day-chart"
 import { SalesByDay } from "../services/dashboard.service"
 import { FullScreenLoader } from "../components/full-screen-loader"
 import { SaleCard } from "../components/sale-card"
+import { formatCurrency } from "../utils/format-currency"
 
 export function HomePage() {
     const { user, dashboardData, isLoading, isError } = useHome()
@@ -48,7 +49,7 @@ export function HomePage() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <CardTitle className="text-2xl">S/ {salesData.amount}</CardTitle>
+                                    <CardTitle className="text-2xl">{formatCurrency(Number(salesData.amount))}</CardTitle>
                                     <div className={`flex items-center gap-1 mt-1 ${salesData.isPositive ? 'text-green-600' : 'text-red-600'
                                         }`}>
                                         {salesData.isPositive ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -92,7 +93,7 @@ export function HomePage() {
                                     <div className={`flex items-center gap-1 mt-1 ${salesData.isPositive ? 'text-green-600' : 'text-red-600'
                                         }`}>
                                         {salesData.isPositive ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                        <span className="text-sm">{salesData.change}% vs ayer</span>
+                                        <span className="text-sm">{salesData.change.toFixed(2)}% vs ayer</span>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -108,7 +109,7 @@ export function HomePage() {
                                     <div className={`flex items-center gap-1 mt-1 ${ordersData.isPositive ? 'text-green-600' : 'text-red-600'
                                         }`}>
                                         {ordersData.isPositive ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                        <span className="text-sm">{ordersData.change}% vs ayer</span>
+                                        <span className="text-sm">{ordersData.change.toFixed(2)}% vs ayer</span>
                                     </div>
                                 </CardContent>
                             </Card>

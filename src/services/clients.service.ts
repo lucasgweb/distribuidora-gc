@@ -17,8 +17,7 @@ export async function getClient(
 }
 
 export interface ListClientsParams {
-  name?: string
-  dni?: string
+  search?: string
   page?: number
   pageSize?: number
 }

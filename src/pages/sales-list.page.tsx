@@ -8,72 +8,114 @@ import { SaleDTO } from '../dtos/sale.dto';
 import { BottomNav } from '../components/bottom-nav';
 import { SaleCard } from '../components/sale-card';
 import { FullScreenLoader } from '../components/full-screen-loader';
+import { useDebounce } from 'use-debounce';
 
 const PAGE_SIZE = 10;
 
 export function SalesListPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
+    const [debouncedSearch] = useDebounce(search, 300);
     const [sales, setSales] = useState<SaleDTO[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
+    const [initialLoadDone, setInitialLoadDone] = useState(false);
 
+    const currentPageRef = useRef(page);
     const observerRef = useRef<HTMLDivElement | null>(null);
+    const loadingRef = useRef(loading);
+    const hasMoreRef = useRef(hasMore);
+    const initialLoadDoneRef = useRef(initialLoadDone);
 
-    const loadSales = useCallback(async () => {
-        if (loading || !hasMore) return;
+    useEffect(() => {
+        loadingRef.current = loading;
+        hasMoreRef.current = hasMore;
+        currentPageRef.current = page;
+        initialLoadDoneRef.current = initialLoadDone;
+    }, [loading, hasMore, page, initialLoadDone]);
+
+    const loadSales = useCallback(async (forceReset = false) => {
+        if (loadingRef.current || (!forceReset && !hasMoreRef.current)) return;
 
         setLoading(true);
         try {
+            const currentPage = forceReset ? 1 : currentPageRef.current;
+
             const data = await listSales({
-                page,
+                query: debouncedSearch || undefined,
+                page: currentPage,
                 pageSize: PAGE_SIZE,
-                query: search || undefined,
             });
 
             setSales(prev => {
                 const existingIds = new Set(prev.map(s => s.id));
                 const newSales = data.sales.filter(s => !existingIds.has(s.id));
-                return [...prev, ...newSales];
+                return forceReset ? newSales : [...prev, ...newSales];
             });
 
-            setHasMore(data.sales.length === PAGE_SIZE);
+            const totalPages = Math.ceil(data.total / PAGE_SIZE);
+            setHasMore(currentPage < totalPages);
+
+            if (!initialLoadDoneRef.current) {
+                setInitialLoadDone(true);
+            }
+
         } catch (error) {
-            console.error('Erro ao carregar ventas:', error);
+            console.error('Error al cargar ventas:', error);
         } finally {
             setLoading(false);
         }
-    }, [search, page, loading, hasMore]);
+    }, [debouncedSearch]);
 
+    // Carregamento inicial ou quando a busca mudar
     useEffect(() => {
-        setSales([]);
-        setPage(1);
-        setHasMore(true);
-        loadSales();
-    }, [search]);
+        const controller = new AbortController();
+        setIsSearching(true);
 
-    useEffect(() => {
-        if (page !== 1) {
-            loadSales();
-        }
-    }, [page, loadSales]);
-
-    // Configurar IntersectionObserver
-    useEffect(() => {
-        const observer = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasMore && !loading) {
-                setPage(prev => prev + 1);
-            }
-        }, { threshold: 0.1 });
-
-        const current = observerRef.current;
-        if (current) observer.observe(current);
+        const timer = setTimeout(() => {
+            setSales([]);
+            setPage(1);
+            currentPageRef.current = 1;
+            setHasMore(true);
+            setInitialLoadDone(false);
+            loadSales(true).finally(() => setIsSearching(false));
+        }, 150);
 
         return () => {
-            if (current) observer.unobserve(current);
+            controller.abort();
+            clearTimeout(timer);
         };
-    }, [hasMore, loading]);
+    }, [debouncedSearch, loadSales]);
+
+    // Carregamento quando a página mudar (scroll infinito)
+    useEffect(() => {
+        if (page === 1) return;
+        loadSales();
+    }, [page, loadSales]);
+
+    // Configuração do observador de interseção para o scroll infinito
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting &&
+                    hasMoreRef.current &&
+                    !loadingRef.current &&
+                    initialLoadDoneRef.current) {
+                    setPage(prev => prev + 1);
+                }
+            },
+            { threshold: 0.5, rootMargin: '100px' }
+        );
+
+        const currentObserver = observerRef.current;
+        if (currentObserver) observer.observe(currentObserver);
+
+        return () => {
+            if (currentObserver) observer.unobserve(currentObserver);
+        };
+    }, []);
 
     return (
         <>
@@ -84,35 +126,45 @@ export function SalesListPage() {
                     <div className="flex items-center justify-between gap-2 mb-6">
                         <div className="flex flex-1 relative">
                             <Input
-                                placeholder="Buscar ventas por cliente o codigo..."
+                                placeholder="Buscar por cliente, código o documento..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className="bg-white shadow-sm"
+                                className="bg-white shadow-sm pr-8"
                             />
+                            {isSearching && (
+                                <Loader2 className="absolute right-2 top-3 h-4 w-4 animate-spin text-gray-500" />
+                            )}
                         </div>
-
                     </div>
 
                     <div className="mt-4 space-y-3">
-                        {sales.map(sale => (
-                            <SaleCard sale={sale} key={sale.id} />
-
-                        ))}
-
-                        {loading && page === 1 && <FullScreenLoader />}
-
-                        {loading && page > 1 && (
-                            <div className="flex justify-center py-4">
-                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        {isSearching && sales.length === 0 && (
+                            <div className="flex flex-col items-center py-6">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                                <span className="text-sm text-gray-600">Buscando ventas...</span>
                             </div>
                         )}
 
-                        <div ref={observerRef} className="h-6" />
+                        {sales.map(sale => (
+                            <SaleCard sale={sale} key={sale.id} />
+                        ))}
+
+                        {loading && page === 1 && !isSearching && <FullScreenLoader />}
+
+                        {loading && page > 1 && (
+                            <div className="flex flex-col items-center py-4">
+                                <Loader2 className="h-6 w-6 animate-spin text-primary mb-2" />
+                                <span className="text-sm text-gray-600">Cargando más ventas...</span>
+                            </div>
+                        )}
+
+                        <div ref={observerRef} className="h-2" />
 
                         {!hasMore && sales.length > 0 && (
-                            <p className="text-center text-gray-500 py-4">
-                                No hay más ventas para mostrar
-                            </p>
+                            <div className="text-center py-4 text-gray-500">
+                                <p>Has llegado al final de la lista</p>
+                                <p className="text-sm mt-1">Mostrando {sales.length} de {sales.length} resultados</p>
+                            </div>
                         )}
 
                         {!loading && sales.length === 0 && (
@@ -120,15 +172,19 @@ export function SalesListPage() {
                                 <div className="bg-gray-100 rounded-full p-4 mb-3">
                                     <CreditCard className="h-8 w-8 text-gray-400" />
                                 </div>
-                                <h3 className="text-lg font-medium text-gray-800">No se encontraron ventas</h3>
+                                <h3 className="text-lg font-medium text-gray-800">
+                                    {debouncedSearch ? 'Sin resultados' : 'Sin ventas registradas'}
+                                </h3>
                                 <p className="text-sm text-gray-500 mt-1">
-                                    {search ? 'Prueba con otra búsqueda' : 'Registra tu primera venta para comenzar'}
+                                    {debouncedSearch
+                                        ? 'Intenta con otros términos de búsqueda'
+                                        : 'Presiona el botón "+" para crear una nueva venta'}
                                 </p>
                             </div>
                         )}
                     </div>
                 </div>
-            </div >
+            </div>
             <BottomNav />
         </>
     );

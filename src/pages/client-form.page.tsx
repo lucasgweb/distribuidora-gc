@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Header } from '../components/header';
@@ -7,17 +8,17 @@ import { Label } from '../components/ui/label';
 import { ClientDTO } from '../dtos/client.dto';
 import { createClient, getClient, updateClient } from '../services/clients.service';
 import { FullScreenLoader } from '../components/full-screen-loader';
+import { toast } from 'sonner'; // Importación agregada
 
 // Función para formatear número de teléfono para Perú (+51)
 function formatPhoneNumber(value: string): string {
     let cleaned = value.replace(/\D/g, '');
 
-    // Manejar números que ya empiezan con 51
     if (cleaned.startsWith('51')) {
-        cleaned = cleaned.substring(0, 11); // Limitar a 11 dígitos (51 + 9)
+        cleaned = cleaned.substring(0, 11);
     } else {
         cleaned = '51' + cleaned;
-        cleaned = cleaned.substring(0, 11); // Limitar a 11 dígitos (51 + 9)
+        cleaned = cleaned.substring(0, 11);
     }
 
     if (cleaned.length === 0) return '';
@@ -41,17 +42,14 @@ function formatPhoneNumber(value: string): string {
     return formatted;
 }
 
-// Validación de DNI peruano (8 dígitos)
 function isValidDNI(dni: string): boolean {
     return /^\d{8}$/.test(dni);
 }
 
-// Validación de RUC peruano (11 dígitos y comienza con 10 o 20)
 function isValidRUC(ruc: string): boolean {
     return /^(10|20)\d{9}$/.test(ruc);
 }
 
-// Validación combinada DNI/RUC
 function isValidDNIorRUC(value: string): boolean {
     return isValidDNI(value) || isValidRUC(value);
 }
@@ -84,6 +82,7 @@ export function ClientFormPage() {
                     });
                 } catch (error) {
                     console.error('Error loading client:', error);
+                    toast.error('Error al cargar el cliente');
                 } finally {
                     setLoading(false);
                 }
@@ -98,16 +97,12 @@ export function ClientFormPage() {
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-
         if (client.document) {
-
-            // Validar DNI/RUC
             if (!isValidDNIorRUC(client.document)) {
                 newErrors.dni = 'Ingrese un DNI válido (8 dígitos) o RUC válido (11 dígitos)';
             }
         }
 
-        // Validar teléfono peruano (+51)
         const phoneDigits = client.phone.replace(/\D/g, '');
         if (phoneDigits.length > 0) {
             const isPhoneValid = phoneDigits.startsWith('51') && phoneDigits.length === 11;
@@ -118,7 +113,6 @@ export function ClientFormPage() {
             newErrors.phone = 'El número de teléfono es requerido';
         }
 
-        // Validar email
         if (client.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client.email)) {
             newErrors.email = 'Ingrese un email válido';
         }
@@ -135,7 +129,6 @@ export function ClientFormPage() {
         }
 
         try {
-            // Limpiar formato del teléfono antes de guardar
             const cleanedPhone = client.phone.replace(/\s/g, '');
 
             if (id && id !== 'new') {
@@ -143,17 +136,22 @@ export function ClientFormPage() {
                     ...client,
                     phone: cleanedPhone,
                 });
+                toast.success('Cliente actualizado correctamente');
             } else {
                 await createClient({
                     ...client,
                     phone: cleanedPhone,
                 });
+                toast.success('Cliente creado correctamente');
             }
 
             navigate('/clients');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving client:', error);
-            alert('Ocurrió un error al guardar el cliente.');
+
+            // Manejo de errores del servidor
+            const errorMessage = error.response?.data?.message || 'Ocurrió un error al guardar el cliente';
+            toast.error(errorMessage);
         }
     };
 
@@ -169,7 +167,6 @@ export function ClientFormPage() {
         const formatted = formatPhoneNumber(value);
         setClient({ ...client, phone: formatted });
 
-        // Validación en tiempo real
         const phoneDigits = formatted.replace(/\D/g, '');
         if (phoneDigits.startsWith('51') && phoneDigits.length === 11) {
             setErrors({ ...errors, phone: '' });
