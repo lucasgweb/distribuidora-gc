@@ -36,6 +36,36 @@ interface PaginationState {
     isLoading: boolean;
 }
 
+// Componente para el skeleton de un movimiento de inventario
+const InventoryMovementSkeleton = () => {
+    return (
+        <div className="border p-4 rounded-xl animate-pulse">
+            <div className="flex justify-between items-start">
+                <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                        <Skeleton className="h-[18px] w-[18px] rounded-full" />
+                        <Skeleton className="h-5 w-40" />
+                    </div>
+                    <Skeleton className="h-4 w-56 mt-1" />
+                </div>
+                <Skeleton className="h-7 w-16 rounded-md" />
+            </div>
+
+            <div className="mt-3 flex items-center">
+                <Skeleton className="h-[22px] w-24 rounded-full" />
+                <Skeleton className="h-[22px] w-20 rounded-full ml-2" />
+            </div>
+
+            {/* Simular notas en aproximadamente 30% de los casos */}
+            {Math.random() > 0.7 && (
+                <div className="mt-2">
+                    <Skeleton className="h-10 w-full rounded-md" />
+                </div>
+            )}
+        </div>
+    );
+};
+
 export function InventoryListPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
@@ -139,6 +169,15 @@ export function InventoryListPage() {
         return format(new Date(dateString), 'dd MMM yyyy, HH:mm', { locale: es });
     };
 
+    // Renderizar los skeletons con variedad
+    const renderSkeletons = () => {
+        return Array(5)
+            .fill(0)
+            .map((_, index) => (
+                <InventoryMovementSkeleton key={`skeleton-${index}`} />
+            ));
+    };
+
     return (
         <div className="flex flex-col min-h-screen px-4 bg-white">
             <Header title="Inventario" onBack={() => navigate('/')} />
@@ -182,11 +221,7 @@ export function InventoryListPage() {
                                     key={movement.id}
                                     ref={isLastElement ? lastMovementElementRef : null}
                                     className={`
-                                        border p-4 rounded-xl shadow-sm 
-                                        ${isEntry
-                                            ? 'border-l-4 border-l-green-500'
-                                            : 'border-l-4 border-l-red-500'
-                                        }
+                                        border p-4 rounded-xl 
                                     `}
                                 >
                                     <div className="flex justify-between items-start">
@@ -239,15 +274,7 @@ export function InventoryListPage() {
                         })
                     )}
 
-                    {pagination.isLoading && (
-                        <>
-                            <Skeleton className="w-full h-24 rounded-xl" />
-                            <Skeleton className="w-full h-24 rounded-xl" />
-                            <Skeleton className="w-full h-24 rounded-xl" />
-                            <Skeleton className="w-full h-24 rounded-xl" />
-                            <Skeleton className="w-full h-24 rounded-xl" />
-                        </>
-                    )}
+                    {pagination.isLoading && renderSkeletons()}
                 </div>
             </div>
         </div>
