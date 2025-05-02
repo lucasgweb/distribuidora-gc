@@ -104,7 +104,7 @@ export function InventoryMovementPage() {
 
             toast.success("Movimiento de inventario registrado correctamente");
 
-            navigate('/inventory');
+            navigate(-1);
         } catch (error) {
             console.error('Error registering inventory movement:', error);
             toast.error("No se pudo registrar el movimiento de inventario");
