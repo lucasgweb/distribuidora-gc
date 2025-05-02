@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
                 element: <RegisterDriverPage />
             },
             {
-                path: "/inventory",
+                path: "/inventory-movement-list",
                 element: <InventoryListPage />
             },
             {
