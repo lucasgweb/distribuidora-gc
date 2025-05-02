@@ -299,7 +299,6 @@ export function RegisterSalePage() {
 
         try {
             const res = await createSale(saleData);
-            toast.success('Venta registrada con éxito');
             navigate(`/sale-finished/${res.saleId}`);
         } catch (err) {
             console.error('Error al registrar venta:', err);
