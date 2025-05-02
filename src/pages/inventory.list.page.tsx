@@ -4,8 +4,7 @@ import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
-import { Badge } from '../components/ui/badge';
-import { PlusCircle, Search } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, Plus, Search } from 'lucide-react';
 import { api } from '../lib/api';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -133,7 +132,7 @@ export function InventoryListPage() {
     };
 
     const getCylinderTypeText = (type: 'FULL' | 'EMPTY') => {
-        return type === 'FULL' ? 'Lleno' : 'Vacío';
+        return type === 'FULL' ? 'lleno' : 'vacío';
     };
 
     const formatDateTime = (dateString: string) => {
@@ -141,27 +140,30 @@ export function InventoryListPage() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50">
-            <div className="px-6 pb-10 max-w-md mx-auto w-full">
-                <div className="flex items-center justify-between py-6">
-                    <Header title="Inventario" onBack={() => navigate('/')} />
-                    <Button
-                        onClick={() => navigate('/inventory/movement/new')}
-                        size="icon"
-                        className="rounded-full"
-                    >
-                        <PlusCircle size={20} />
-                    </Button>
-                </div>
+        <div className="flex flex-col min-h-screen px-4 bg-white">
+            <Header title="Inventario" onBack={() => navigate('/')} />
+            <div className="pb-10 max-w-md mx-auto w-full">
 
-                <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                    <Input
-                        placeholder="Buscar movimientos"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="pl-10"
-                    />
+                <div className='flex items-center flex-1 mb-4 w-full gap-2'>
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                        <Input
+                            placeholder="Buscar movimientos"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="pl-10"
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <Button
+                            className='w-full'
+                            onClick={() => navigate('/inventory-movement')}
+                        >
+                            <Plus size={20} />
+                            Nuevo
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="space-y-3">
@@ -171,37 +173,67 @@ export function InventoryListPage() {
                         </div>
                     ) : (
                         movements.map((movement, index) => {
-                            // Check if this is the last element
                             const isLastElement = index === movements.length - 1;
+                            const isEntry = movement.movementType === 'ENTRY';
+                            const isFull = movement.cylinderType === 'FULL';
 
                             return (
                                 <div
                                     key={movement.id}
                                     ref={isLastElement ? lastMovementElementRef : null}
-                                    className="bg-white p-4 rounded-xl shadow"
+                                    className={`
+                                        border p-4 rounded-xl shadow-sm 
+                                        ${isEntry
+                                            ? 'border-l-4 border-l-green-500'
+                                            : 'border-l-4 border-l-red-500'
+                                        }
+                                    `}
                                 >
                                     <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="font-medium">{movement.product.name}</p>
-                                            <p className="text-sm text-gray-500">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                {isEntry ? (
+                                                    <ArrowDownCircle className="text-green-500" size={18} />
+                                                ) : (
+                                                    <ArrowUpCircle className="text-red-500" size={18} />
+                                                )}
+                                                <p className="font-medium">{movement.product.name}</p>
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-1">
                                                 {formatDateTime(movement.createdAt)} • {movement.user.name}
                                             </p>
                                         </div>
-                                        <Badge
-                                            variant={movement.movementType === 'ENTRY' ? 'default' : 'destructive'}
-                                            className="capitalize"
-                                        >
+                                        <div className={`
+                                            text-sm font-medium px-2 py-1 rounded-md
+                                            ${isEntry
+                                                ? 'bg-green-50 text-green-700'
+                                                : 'bg-red-50 text-red-700'
+                                            }
+                                        `}>
                                             {getMovementTypeText(movement.movementType)}
-                                        </Badge>
+                                        </div>
                                     </div>
-                                    <div className="mt-2">
-                                        <p className="text-sm">
-                                            {movement.quantity} cilindro(s) {getCylinderTypeText(movement.cylinderType)}
-                                        </p>
-                                        {movement.notes && (
-                                            <p className="text-xs text-gray-600 mt-1 italic">"{movement.notes}"</p>
-                                        )}
+
+                                    <div className="mt-3 flex items-center">
+                                        <div className={`
+                                            inline-flex items-center px-2 py-1 rounded-full text-xs
+                                            ${isFull
+                                                ? 'bg-blue-100 text-blue-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                            }
+                                        `}>
+                                            Cilindro {getCylinderTypeText(movement.cylinderType)}
+                                        </div>
+                                        <div className="ml-2 px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">
+                                            {movement.quantity} unidades
+                                        </div>
                                     </div>
+
+                                    {movement.notes && (
+                                        <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md">
+                                            "{movement.notes}"
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })
@@ -209,6 +241,9 @@ export function InventoryListPage() {
 
                     {pagination.isLoading && (
                         <>
+                            <Skeleton className="w-full h-24 rounded-xl" />
+                            <Skeleton className="w-full h-24 rounded-xl" />
+                            <Skeleton className="w-full h-24 rounded-xl" />
                             <Skeleton className="w-full h-24 rounded-xl" />
                             <Skeleton className="w-full h-24 rounded-xl" />
                         </>

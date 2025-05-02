@@ -139,7 +139,7 @@ export function InventoryMovementPage() {
                     </div>
 
                     <div className="space-y-3">
-                        <h2 className="text-md font-semibold">Cilindro</h2>
+                        <h2 className="text-md font-semibold">Balón</h2>
                         <RadioGroup
                             value={cylinderType}
                             onValueChange={(val) => setCylinderType(val as 'FULL' | 'EMPTY')}
