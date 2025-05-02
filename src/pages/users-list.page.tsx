@@ -5,12 +5,12 @@ import { Input } from '../components/ui/input';
 import { User } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { UserDTO } from '../dtos/user.dto';
-import { FullScreenLoader } from '../components/full-screen-loader';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { listUsers } from '../services/users.service';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import DefaultAvatar from './../assets/default-avatar.svg'
+import { Skeleton } from '../components/ui/skeleton';
 
 export function UsersListPage() {
     const navigate = useNavigate();
@@ -25,7 +25,33 @@ export function UsersListPage() {
             user.email.toLowerCase().includes(searchLower)
         );
     });
+    const renderUserSkeletons = () => {
+        return Array(4).fill(0).map((_, index) => (
+            <Card key={`skeleton-${index}`} className="overflow-hidden bg-white">
+                <CardContent className="p-0">
+                    <div className="flex flex-col">
+                        <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <Skeleton className="w-10 h-10 rounded-full" />
+                                <Skeleton className="h-5 w-32" />
+                            </div>
+                            <Skeleton className="h-4 w-24" />
+                        </div>
 
+                        <div className="px-4 py-2">
+                            <div className="flex justify-between items-center">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-40" />
+                                    <Skeleton className="h-3 w-32" />
+                                </div>
+                                <Skeleton className="h-3 w-16" />
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        ));
+    };
     const loadUsers = async () => {
         setLoading(true);
         try {
@@ -116,7 +142,7 @@ export function UsersListPage() {
                             </Card>
                         ))}
 
-                        {loading && <FullScreenLoader />}
+                        {loading && renderUserSkeletons()}
 
                         {!loading && filteredUsers.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-12 text-center">

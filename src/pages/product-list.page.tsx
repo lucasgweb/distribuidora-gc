@@ -66,9 +66,11 @@ export function ProductListPage() {
                 <div className="mt-4 space-y-2">
                     {loading ? (
                         <>
-                            <Skeleton className="w-full h-24 rounded-lg" />
-                            <Skeleton className="w-full h-24 rounded-lg" />
-                            <Skeleton className="w-full h-24 rounded-lg" />
+                            <Skeleton className="w-full h-32 rounded-lg" />
+                            <Skeleton className="w-full h-32 rounded-lg" />
+                            <Skeleton className="w-full h-32 rounded-lg" />
+                            <Skeleton className="w-full h-32 rounded-lg" />
+                            <Skeleton className="w-full h-32 rounded-lg" />
                         </>
                     ) : filtered.length === 0 ? (
                         <div className="text-center py-6 bg-gray-50 rounded-lg">

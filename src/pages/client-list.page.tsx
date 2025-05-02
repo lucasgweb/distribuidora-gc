@@ -6,8 +6,8 @@ import { Button } from '../components/ui/button';
 import { ArrowRight, IdCard, Loader2, Mail, MapPin, Phone, Plus } from 'lucide-react';
 import { ClientDTO } from '../dtos/client.dto';
 import { Card, CardContent } from '../components/ui/card';
+import { Skeleton } from '../components/ui/skeleton';
 import { listClients } from '../services/clients.service';
-import { FullScreenLoader } from '../components/full-screen-loader';
 import { formatPhoneNumber } from 'react-phone-number-input';
 import { useDebounce } from 'use-debounce';
 
@@ -110,6 +110,44 @@ export function ClientListPage() {
         };
     }, []);
 
+    // Función para renderizar skeletons de clientes
+    const renderClientSkeletons = (count = 5) => {
+        return Array(count).fill(0).map((_, index) => (
+            <Card key={`skeleton-${index}`} className="overflow-hidden">
+                <CardContent>
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                            <Skeleton className="h-6 w-40 mb-3" />
+
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                                <div className="flex items-center gap-2">
+                                    <Skeleton className="h-4 w-4 rounded-full" />
+                                    <Skeleton className="h-4 w-24" />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Skeleton className="h-4 w-4 rounded-full" />
+                                    <Skeleton className="h-4 w-24" />
+                                </div>
+                            </div>
+
+                            <div className="mt-3 space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <Skeleton className="h-4 w-4 rounded-full" />
+                                    <Skeleton className="h-4 w-32" />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Skeleton className="h-4 w-4 rounded-full" />
+                                    <Skeleton className="h-4 w-48" />
+                                </div>
+                            </div>
+                        </div>
+                        <Skeleton className="h-5 w-5 rounded-full" />
+                    </div>
+                </CardContent>
+            </Card>
+        ));
+    };
+
     return (
         <div className="flex px-4 flex-col min-h-screen">
             <Header title="Clientes" onBack={() => navigate('/')} />
@@ -122,7 +160,6 @@ export function ClientListPage() {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
-
                     </div>
 
                     <Button onClick={() => navigate('/clients/new')}>
@@ -132,11 +169,12 @@ export function ClientListPage() {
                 </div>
 
                 <div className="mt-4 space-y-3">
-                    {isSearching && clients.length === 0 && (
-                        <div className="flex justify-center p-4">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                    )}
+                    {/* Mostrar skeletons durante la carga inicial o búsqueda */}
+                    {(loading && page === 1) || (isSearching && clients.length === 0) ? (
+                        renderClientSkeletons()
+                    ) : null}
+
+                    {/* Mostrar clientes cuando están cargados */}
                     {clients.map(client => (
                         <Card
                             key={client.id}
@@ -191,8 +229,7 @@ export function ClientListPage() {
                         </Card>
                     ))}
 
-                    {loading && page === 1 && !isSearching && <FullScreenLoader />}
-
+                    {/* Mostrar skeleton al cargar más páginas */}
                     {loading && page > 1 && (
                         <div className="flex justify-center py-4">
                             <Loader2 className="h-6 w-6 animate-spin text-primary" />

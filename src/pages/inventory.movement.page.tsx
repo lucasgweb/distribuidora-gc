@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Header } from "../components/header";
 import { Label } from "../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
@@ -11,10 +11,9 @@ import { api } from "../lib/api";
 import { Textarea } from "../components/ui/textarea";
 import { ProductDTO } from "../dtos/product.dto";
 
-
-
 export function InventoryMovementPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isLoading, setIsLoading] = useState(false);
     const [products, setProducts] = useState<ProductDTO[]>([]);
     const [selectedProductId, setSelectedProductId] = useState('');
@@ -22,6 +21,18 @@ export function InventoryMovementPage() {
     const [cylinderType, setCylinderType] = useState<'FULL' | 'EMPTY'>('FULL');
     const [quantity, setQuantity] = useState('');
     const [notes, setNotes] = useState('');
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const productId = queryParams.get('productId');
+
+        if (productId) {
+            setSelectedProductId(productId);
+        }
+    }, [location.search]);
+
+    console.log(isInitialized)
 
     // Fetch products on component mount
     useEffect(() => {
@@ -33,9 +44,24 @@ export function InventoryMovementPage() {
                 if (Array.isArray(response.data.products)) {
                     setProducts(response.data.products);
 
-                    // Set first product as default if available
-                    if (response.data.length > 0) {
-                        setSelectedProductId(response.data[0].id);
+                    // Si no hay un productId en la URL y hay productos, seleccionar el primero
+                    const queryParams = new URLSearchParams(location.search);
+                    const productIdFromUrl = queryParams.get('productId');
+
+                    if (!productIdFromUrl && response.data.products.length > 0 && !selectedProductId) {
+                        setSelectedProductId(response.data.products[0].id);
+                    }
+
+                    // Verificar si el productId de la URL existe en los productos cargados
+                    if (productIdFromUrl) {
+                        const productExists = response.data.products.some(
+                            (product: ProductDTO) => product.id === productIdFromUrl
+                        );
+
+                        if (!productExists) {
+                            console.warn(`Producto con ID ${productIdFromUrl} no encontrado`);
+                            toast.error("El producto seleccionado no existe");
+                        }
                     }
                 } else {
                     console.error("API response is not an array:", response.data);
@@ -46,11 +72,13 @@ export function InventoryMovementPage() {
                 console.error("Error fetching products:", error);
                 toast.error("No se pudieron cargar los productos");
                 setProducts([]);
+            } finally {
+                setIsInitialized(true);
             }
         };
 
         fetchProducts();
-    }, []);
+    }, [location.search, selectedProductId]);
 
     const handleSubmit = async () => {
         if (!selectedProductId) {
@@ -76,7 +104,7 @@ export function InventoryMovementPage() {
 
             toast.success("Movimiento de inventario registrado correctamente");
 
-            navigate('/inventory-movement-list');
+            navigate('/inventory');
         } catch (error) {
             console.error('Error registering inventory movement:', error);
             toast.error("No se pudo registrar el movimiento de inventario");
@@ -95,7 +123,7 @@ export function InventoryMovementPage() {
             <div className="px-6 pb-10 max-w-md mx-auto w-full flex-1">
                 <Header title="Movimiento de inventario" onBack={() => navigate(-1)} />
 
-                <div className="mt-6 space-y-6">
+                <div className="mt-6 space-y-4">
                     <div className="space-y-3">
                         <h2 className="text-md font-semibold">Información del producto</h2>
                         <div className="space-y-1">
