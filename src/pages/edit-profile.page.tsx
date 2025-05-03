@@ -13,8 +13,6 @@ import { Header } from "../components/header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Switch } from "../components/ui/switch";
 import { useAuth } from "../hooks/use-auth.hook";
-import { BottomNav } from "../components/bottom-nav";
-
 type FormData = {
     name: string;
     email: string;
