@@ -1,6 +1,6 @@
 export interface CreateClientDTO {
   name: string;
-  document?: string;
+  document?: string | null;
   address?: string | null;
   phone: string;
   email?: string | null;
@@ -13,7 +13,7 @@ export interface UpdateClientDTO extends Partial<CreateClientDTO> {
 export interface ClientDTO {
   id: string;
   name: string;
-  document: string;
+  document: string  | null;
   address: string | null;
   phone: string;
   email: string | null;

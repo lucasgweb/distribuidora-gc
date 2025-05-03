@@ -63,9 +63,9 @@ export function ClientFormPage() {
     const [client, setClient] = useState<ClientDTO>({
         id: '',
         name: '',
-        document: '',
+        document: null,
         phone: '',
-        email: '',
+        email: null,
         address: '',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -149,7 +149,6 @@ export function ClientFormPage() {
         } catch (error: any) {
             console.error('Error saving client:', error);
 
-            // Manejo de errores del servidor
             const errorMessage = error.response?.data?.message || 'Ocurrió un error al guardar el cliente';
             toast.error(errorMessage);
         }
@@ -201,7 +200,7 @@ export function ClientFormPage() {
                                 <div>
                                     <Label>DNI/RUC</Label>
                                     <Input
-                                        value={client.document}
+                                        value={client.document ?? undefined}
                                         onChange={e => handleDNIChange(e.target.value)}
                                         placeholder="DNI (8 dígitos) o RUC (11 dígitos)"
                                         maxLength={11}

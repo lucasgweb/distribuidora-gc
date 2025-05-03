@@ -163,9 +163,6 @@ export function SalesListPage() {
                                 onChange={e => setSearch(e.target.value)}
                                 className="bg-white shadow-sm pr-8"
                             />
-                            {isSearching && (
-                                <Loader2 className="absolute right-2 top-3 h-4 w-4 animate-spin text-gray-500" />
-                            )}
                         </div>
                     </div>
 
