@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Button } from '../components/ui/button';
 import { Loader2, Copy, Clock } from 'lucide-react';
@@ -10,7 +9,6 @@ import { BottomNav } from '../components/bottom-nav';
 import { toast } from 'sonner';
 
 export function GenerateInvitePage() {
-    const navigate = useNavigate();
     const [code, setCode] = useState<string | null>(null);
     const [minutes, setMinutes] = useState<string>('60');
     const [loading, setLoading] = useState(false);
@@ -51,7 +49,7 @@ export function GenerateInvitePage() {
     return (
         <>
             <div className="flex px-6 flex-col min-h-screen mb-16">
-                <Header title="Generar Invitación" onBack={() => navigate('/')} />
+                <Header title="Generar Invitación" showMenu />
 
                 <div className="max-w-3xl mx-auto w-full pt-6 space-y-6">
                     <div className="bg-white ">

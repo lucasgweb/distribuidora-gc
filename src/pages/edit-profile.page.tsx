@@ -13,6 +13,7 @@ import { Header } from "../components/header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Switch } from "../components/ui/switch";
 import { useAuth } from "../hooks/use-auth.hook";
+import { BottomNav } from "../components/bottom-nav";
 
 type FormData = {
     name: string;
@@ -92,99 +93,101 @@ export function EditProfilePage() {
     }
 
     return (
-        <div className="flex flex-col h-screen px-4 ">
-            <Header title="Editar perfil" onBack={() => navigate(-1)} />
+        <>
+            <div className="flex flex-col h-screen max-w-6xl mx-auto px-4 ">
+                <Header title="Editar perfil" onBack={() => navigate(-1)} />
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-4">
-                    <div>
-                        <Label>Nombre completo</Label>
-                        <Input
-                            value={formData.name}
-                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="Ingresa el nombre completo"
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <Label>Correo electrónico</Label>
-                        <Input
-                            type="email"
-                            value={formData.email}
-                            disabled
-                            className="opacity-70 cursor-not-allowed"
-                        />
-                    </div>
-
-                    <div>
-                        <Label>Nueva contraseña</Label>
-                        <div className="relative">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-4">
+                        <div>
+                            <Label>Nombre completo</Label>
                             <Input
-                                type={showPassword ? 'text' : 'password'}
-                                value={formData.password}
-                                onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                placeholder="Dejar en blanco para no cambiar"
-                                minLength={8}
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="Ingresa el nombre completo"
+                                required
                             />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-3 text-gray-500"
-                            >
-                                {showPassword ? <EyeClosed className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
                         </div>
-                    </div>
 
-                    <div className="flex items-center justify-between">
-                        <Label>Rol del usuario</Label>
-                        {isEditingSelf ? (
+                        <div>
+                            <Label>Correo electrónico</Label>
                             <Input
-                                value={formData.role === 'ADMIN' ? 'Administrador' : 'Miembro'}
+                                type="email"
+                                value={formData.email}
                                 disabled
-                                className="w-[180px] bg-gray-100 text-gray-600 cursor-not-allowed"
+                                className="opacity-70 cursor-not-allowed"
                             />
-                        ) : (
-                            <Select
-                                value={formData.role}
-                                onValueChange={value => setFormData({ ...formData, role: value as 'ADMIN' | 'MEMBER' })}
-                            >
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Seleccionar rol" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="ADMIN">Administrador</SelectItem>
-                                    <SelectItem value="MEMBER">Miembro</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        )}
-                    </div>
+                        </div>
 
-                    <div className="flex items-center justify-between">
-                        <Label>Estado del usuario</Label>
-                        <div className="flex items-center gap-2">
-                            <Switch
-                                checked={formData.active}
-                                onCheckedChange={!isEditingSelf ? (checked: any) => setFormData({ ...formData, active: checked }) : undefined}
-                                disabled={isEditingSelf}
-                            />
-                            <span className="text-sm">
-                                {formData.active ? 'Activo' : 'Inactivo'}
-                            </span>
+                        <div>
+                            <Label>Nueva contraseña</Label>
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={formData.password}
+                                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                    placeholder="Dejar en blanco para no cambiar"
+                                    minLength={8}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-3 text-gray-500"
+                                >
+                                    {showPassword ? <EyeClosed className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <Label>Rol del usuario</Label>
+                            {isEditingSelf ? (
+                                <Input
+                                    value={formData.role === 'ADMIN' ? 'Administrador' : 'Miembro'}
+                                    disabled
+                                    className="w-[180px] bg-gray-100 text-gray-600 cursor-not-allowed"
+                                />
+                            ) : (
+                                <Select
+                                    value={formData.role}
+                                    onValueChange={value => setFormData({ ...formData, role: value as 'ADMIN' | 'MEMBER' })}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Seleccionar rol" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ADMIN">Administrador</SelectItem>
+                                        <SelectItem value="MEMBER">Miembro</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <Label>Estado del usuario</Label>
+                            <div className="flex items-center gap-2">
+                                <Switch
+                                    checked={formData.active}
+                                    onCheckedChange={!isEditingSelf ? (checked: any) => setFormData({ ...formData, active: checked }) : undefined}
+                                    disabled={isEditingSelf}
+                                />
+                                <span className="text-sm">
+                                    {formData.active ? 'Activo' : 'Inactivo'}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="flex gap-4">
-                    <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
-                        Cancelar
-                    </Button>
-                    <Button type="submit" className="flex-1">
-                        Guardar cambios
-                    </Button>
-                </div>
-            </form>
-        </div>
+                    <div className="flex gap-4">
+                        <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" className="flex-1">
+                            Guardar cambios
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </>
     );
 }

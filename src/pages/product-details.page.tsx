@@ -100,7 +100,7 @@ export function ProductDetailsPage() {
                 await updateProduct({ id: id!, ...payload });
             }
 
-            navigate('/products');
+            navigate(-1);
         } catch (error) {
             console.error('Error al guardar producto:', error);
             alert('Ocurrió un error al guardar el producto.');

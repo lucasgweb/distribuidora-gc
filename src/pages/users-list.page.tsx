@@ -11,6 +11,7 @@ import { listUsers } from '../services/users.service';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import DefaultAvatar from './../assets/default-avatar.svg'
 import { Skeleton } from '../components/ui/skeleton';
+import { BottomNav } from '../components/bottom-nav';
 
 export function UsersListPage() {
     const navigate = useNavigate();
@@ -78,10 +79,10 @@ export function UsersListPage() {
 
     return (
         <>
-            <div className="flex px-4 flex-col min-h-screen mb-16">
-                <Header title="Usuarios" onBack={() => navigate('/')} />
+            <div className="flex px-4 flex-col max-w-6xl  mx-auto min-h-screen mb-16">
+                <Header title="Usuarios" showMenu />
 
-                <div className="pt-4 pb-4 max-w-3xl mx-auto w-full">
+                <div className="pt-4 pb-4 mx-auto w-full">
                     <div className="flex items-center justify-between gap-2 mb-6">
                         <div className="flex flex-1 relative">
                             <Input
@@ -162,6 +163,8 @@ export function UsersListPage() {
                     </div>
                 </div>
             </div>
+
+            <BottomNav />
         </>
     );
 }

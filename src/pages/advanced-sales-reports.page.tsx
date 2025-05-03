@@ -130,7 +130,7 @@ export function AdvancedSalesReportsPage() {
 
     return (
         <>
-            <div className="flex px-4 flex-col min-h-screen mb-16">
+            <div className="flex px-4 flex-col max-w-6xl mx-auto min-h-screen mb-16">
                 <Header title="Reportes" onBack={() => navigate('/')} />
 
                 {error ? (

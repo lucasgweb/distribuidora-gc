@@ -9,6 +9,7 @@ import { api } from '../lib/api';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { BottomNav } from '../components/bottom-nav';
 
 interface InventoryMovement {
     id: string;
@@ -179,104 +180,106 @@ export function InventoryListPage() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen px-4 bg-white">
-            <Header title="Inventario" onBack={() => navigate('/')} />
-            <div className="pb-10 max-w-md mx-auto w-full">
-
-                <div className='flex items-center flex-1 mb-4 w-full gap-2'>
-                    <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                        <Input
-                            placeholder="Buscar movimientos"
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <Button
-                            className='w-full'
-                            onClick={() => navigate('/inventory-movement')}
-                        >
-                            <Plus size={20} />
-                            Nuevo
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    {movements.length === 0 && !pagination.isLoading ? (
-                        <div className="bg-white p-6 rounded-xl shadow text-center">
-                            <p className="text-gray-500">No hay movimientos de inventario.</p>
+        <>
+            <div className="flex flex-col min-h-screen px-4 bg-white">
+                <Header title="Inventario" showMenu />
+                <div className="pb-10 max-w-6xl mx-auto w-full mt-3">
+                    <div className='flex items-center flex-1 mb-4 w-full gap-2'>
+                        <div className="relative w-full">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                            <Input
+                                placeholder="Buscar movimientos"
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                className="pl-10"
+                            />
                         </div>
-                    ) : (
-                        movements.map((movement, index) => {
-                            const isLastElement = index === movements.length - 1;
-                            const isEntry = movement.movementType === 'ENTRY';
-                            const isFull = movement.cylinderType === 'FULL';
 
-                            return (
-                                <div
-                                    key={movement.id}
-                                    ref={isLastElement ? lastMovementElementRef : null}
-                                    className={`
+                        <div className="flex items-center justify-between">
+                            <Button
+                                className='w-full'
+                                onClick={() => navigate('/inventory-movement')}
+                            >
+                                <Plus size={20} />
+                                Nuevo
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {movements.length === 0 && !pagination.isLoading ? (
+                            <div className="bg-white p-6 rounded-xl shadow text-center">
+                                <p className="text-gray-500">No hay movimientos de inventario.</p>
+                            </div>
+                        ) : (
+                            movements.map((movement, index) => {
+                                const isLastElement = index === movements.length - 1;
+                                const isEntry = movement.movementType === 'ENTRY';
+                                const isFull = movement.cylinderType === 'FULL';
+
+                                return (
+                                    <div
+                                        key={movement.id}
+                                        ref={isLastElement ? lastMovementElementRef : null}
+                                        className={`
                                         border p-4 rounded-xl 
                                     `}
-                                >
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2">
-                                                {isEntry ? (
-                                                    <ArrowDownCircle className="text-green-500" size={18} />
-                                                ) : (
-                                                    <ArrowUpCircle className="text-red-500" size={18} />
-                                                )}
-                                                <p className="font-medium">{movement.product.name}</p>
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    {isEntry ? (
+                                                        <ArrowDownCircle className="text-green-500" size={18} />
+                                                    ) : (
+                                                        <ArrowUpCircle className="text-red-500" size={18} />
+                                                    )}
+                                                    <p className="font-medium">{movement.product.name}</p>
+                                                </div>
+                                                <p className="text-sm text-gray-500 mt-1">
+                                                    {formatDateTime(movement.createdAt)} • {movement.user.name}
+                                                </p>
                                             </div>
-                                            <p className="text-sm text-gray-500 mt-1">
-                                                {formatDateTime(movement.createdAt)} • {movement.user.name}
-                                            </p>
-                                        </div>
-                                        <div className={`
+                                            <div className={`
                                             text-sm font-medium px-2 py-1 rounded-md
                                             ${isEntry
-                                                ? 'bg-green-50 text-green-700'
-                                                : 'bg-red-50 text-red-700'
-                                            }
+                                                    ? 'bg-green-50 text-green-700'
+                                                    : 'bg-red-50 text-red-700'
+                                                }
                                         `}>
-                                            {getMovementTypeText(movement.movementType)}
+                                                {getMovementTypeText(movement.movementType)}
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="mt-3 flex items-center">
-                                        <div className={`
+                                        <div className="mt-3 flex items-center">
+                                            <div className={`
                                             inline-flex items-center px-2 py-1 rounded-full text-xs
                                             ${isFull
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                            }
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-yellow-100 text-yellow-800'
+                                                }
                                         `}>
-                                            Cilindro {getCylinderTypeText(movement.cylinderType)}
+                                                Cilindro {getCylinderTypeText(movement.cylinderType)}
+                                            </div>
+                                            <div className="ml-2 px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">
+                                                {movement.quantity} unidades
+                                            </div>
                                         </div>
-                                        <div className="ml-2 px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">
-                                            {movement.quantity} unidades
-                                        </div>
+
+                                        {movement.notes && (
+                                            <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md">
+                                                "{movement.notes}"
+                                            </div>
+                                        )}
                                     </div>
+                                );
+                            })
+                        )}
 
-                                    {movement.notes && (
-                                        <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md">
-                                            "{movement.notes}"
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })
-                    )}
-
-                    {pagination.isLoading && renderSkeletons()}
+                        {pagination.isLoading && renderSkeletons()}
+                    </div>
                 </div>
             </div>
-        </div>
+            <BottomNav />
+        </>
     );
 }

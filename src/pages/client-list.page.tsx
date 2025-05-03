@@ -152,9 +152,9 @@ export function ClientListPage() {
     return (
         <>
             <div className="flex px-4 flex-col min-h-screen">
-                <Header title="Clientes" onBack={() => navigate('/')} />
+                <Header title="Clientes" showMenu />
 
-                <div className="pt-4 pb-4 max-w-3xl mx-auto w-full">
+                <div className="pt-4 pb-4 max-w-6xl mx-auto w-full">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-1 relative">
                             <Input

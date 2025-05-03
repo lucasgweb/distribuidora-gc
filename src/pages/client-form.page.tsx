@@ -5,10 +5,40 @@ import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
+import { Skeleton } from '../components/ui/skeleton';
 import { ClientDTO } from '../dtos/client.dto';
 import { createClient, getClient, updateClient } from '../services/clients.service';
-import { FullScreenLoader } from '../components/full-screen-loader';
-import { toast } from 'sonner'; // Importación agregada
+import { toast } from 'sonner';
+
+// Componente de skeleton para los campos del formulario
+const FormFieldSkeleton = ({ hasLabel = true }: { hasLabel?: boolean }) => (
+    <div className="space-y-2">
+        {hasLabel && <Skeleton className="h-4 w-24" />}
+        <Skeleton className="h-10 w-full" />
+    </div>
+);
+
+// Componente para la versión skeleton del formulario
+const ClientFormSkeleton = () => (
+    <div className="space-y-4">
+        <div className="grid gap-4">
+            <FormFieldSkeleton />
+
+            <div className="grid gap-4">
+                <FormFieldSkeleton />
+                <FormFieldSkeleton />
+                <FormFieldSkeleton />
+            </div>
+
+            <FormFieldSkeleton />
+        </div>
+
+        <div className="flex gap-2 mt-6">
+            <Skeleton className="h-10 flex-1" />
+            <Skeleton className="h-10 flex-1" />
+        </div>
+    </div>
+);
 
 // Función para formatear número de teléfono para Perú (+51)
 function formatPhoneNumber(value: string): string {
@@ -172,10 +202,6 @@ export function ClientFormPage() {
         }
     };
 
-    if (loading) {
-        return <FullScreenLoader />;
-    }
-
     return (
         <div className="flex px-6 flex-col min-h-screen">
             <Header
@@ -184,74 +210,78 @@ export function ClientFormPage() {
             />
 
             <div className="pt-4 pb-4 max-w-2xl mx-auto w-full">
-                <form onSubmit={handleSubmit}>
-                    <div className="space-y-4">
-                        <div className="grid gap-4">
-                            <div>
-                                <Label>Nombre Completo<span className='text-red-500'>*</span></Label>
-                                <Input
-                                    required
-                                    value={client.name}
-                                    onChange={e => setClient({ ...client, name: e.target.value })}
-                                />
-                            </div>
-
+                {loading ? (
+                    <ClientFormSkeleton />
+                ) : (
+                    <form onSubmit={handleSubmit}>
+                        <div className="space-y-4">
                             <div className="grid gap-4">
                                 <div>
-                                    <Label>DNI/RUC</Label>
-                                    <Input
-                                        value={client.document ?? undefined}
-                                        onChange={e => handleDNIChange(e.target.value)}
-                                        placeholder="DNI (8 dígitos) o RUC (11 dígitos)"
-                                        maxLength={11}
-                                    />
-                                    {errors.dni && <p className="text-red-500 text-sm mt-1">{errors.dni}</p>}
-                                </div>
-                                <div>
-                                    <Label>Teléfono<span className='text-red-500'>*</span></Label>
+                                    <Label>Nombre Completo<span className='text-red-500'>*</span></Label>
                                     <Input
                                         required
-                                        value={client.phone}
-                                        onChange={e => handlePhoneChange(e.target.value)}
-                                        placeholder="+51 987 654 321"
+                                        value={client.name}
+                                        onChange={e => setClient({ ...client, name: e.target.value })}
                                     />
-                                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                                 </div>
+
+                                <div className="grid gap-4">
+                                    <div>
+                                        <Label>DNI/RUC</Label>
+                                        <Input
+                                            value={client.document ?? undefined}
+                                            onChange={e => handleDNIChange(e.target.value)}
+                                            placeholder="DNI (8 dígitos) o RUC (11 dígitos)"
+                                            maxLength={11}
+                                        />
+                                        {errors.dni && <p className="text-red-500 text-sm mt-1">{errors.dni}</p>}
+                                    </div>
+                                    <div>
+                                        <Label>Teléfono<span className='text-red-500'>*</span></Label>
+                                        <Input
+                                            required
+                                            value={client.phone}
+                                            onChange={e => handlePhoneChange(e.target.value)}
+                                            placeholder="+51 987 654 321"
+                                        />
+                                        {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                                    </div>
+                                    <div>
+                                        <Label>Email</Label>
+                                        <Input
+                                            type="email"
+                                            value={client.email || ''}
+                                            onChange={e => setClient({ ...client, email: e.target.value })}
+                                        />
+                                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                                    </div>
+                                </div>
+
                                 <div>
-                                    <Label>Email</Label>
+                                    <Label>Dirección</Label>
                                     <Input
-                                        type="email"
-                                        value={client.email || ''}
-                                        onChange={e => setClient({ ...client, email: e.target.value })}
+                                        value={client.address || ''}
+                                        onChange={e => setClient({ ...client, address: e.target.value })}
                                     />
-                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                 </div>
                             </div>
 
-                            <div>
-                                <Label>Dirección</Label>
-                                <Input
-                                    value={client.address || ''}
-                                    onChange={e => setClient({ ...client, address: e.target.value })}
-                                />
+                            <div className="flex gap-2 mt-6">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => navigate('/clients')}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button type="submit" className="flex-1">
+                                    {id && id !== 'new' ? 'Guardar Cambios' : 'Crear Cliente'}
+                                </Button>
                             </div>
                         </div>
-
-                        <div className="flex gap-2 mt-6">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="flex-1"
-                                onClick={() => navigate('/clients')}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button type="submit" className="flex-1">
-                                {id && id !== 'new' ? 'Guardar Cambios' : 'Crear Cliente'}
-                            </Button>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                )}
             </div>
         </div>
     );

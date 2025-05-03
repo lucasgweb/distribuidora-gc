@@ -5,6 +5,7 @@ import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
+import { Skeleton } from '../components/ui/skeleton';
 import MoneySVG from '../assets/money.svg';
 import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
@@ -33,10 +34,58 @@ import {
 } from '../components/ui/dialog';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { cn } from '../lib/utils';
-import { FullScreenLoader } from '../components/full-screen-loader';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
+
+// Componentes de Skeleton
+const ClientCardSkeleton = () => (
+    <Card>
+        <CardHeader className='-mb-4'>
+            <Skeleton className="h-6 w-32" />
+        </CardHeader>
+        <CardContent className="py-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-4 w-56 mt-2" />
+        </CardContent>
+    </Card>
+);
+
+const PaymentMethodSkeleton = () => (
+    <Card>
+        <CardHeader className='-mb-4'>
+            <Skeleton className="h-6 w-40" />
+        </CardHeader>
+        <CardContent className="py-4">
+            <div className="flex flex-col sm:flex-row gap-2">
+                {[1, 2].map((i) => (
+                    <Skeleton key={i} className="h-14 flex-1 rounded-xl" />
+                ))}
+            </div>
+        </CardContent>
+    </Card>
+);
+
+const ItemsCardSkeleton = () => (
+    <Card>
+        <CardHeader className="-mb-4 flex flex-row items-center justify-between">
+            <Skeleton className="h-6 w-28" />
+            <Skeleton className="h-9 w-32" />
+        </CardHeader>
+        <CardContent className="pt-6">
+            <Skeleton className="h-40 w-full rounded-lg" />
+        </CardContent>
+    </Card>
+);
+
+const RegisterSaleSkeleton = () => (
+    <div className="space-y-4 mt-4">
+        <ClientCardSkeleton />
+        <PaymentMethodSkeleton />
+        <ItemsCardSkeleton />
+        <Skeleton className="h-12 w-full" />
+    </div>
+);
 
 interface OrderItem {
     item: ProductDTO;
@@ -310,10 +359,6 @@ export function RegisterSalePage() {
         }
     };
 
-
-
-    if (isLoadingProducts) return <FullScreenLoader />;
-
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <div className="px-4 pb-20 max-w-2xl mx-auto w-full flex-1">
@@ -322,223 +367,227 @@ export function RegisterSalePage() {
                     onBack={() => navigate('/')}
                 />
 
-                <div className="space-y-4 mt-4">
-                    {/* Información principal */}
-                    <Card>
-                        <CardHeader className='-mb-4'>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <CheckCircle className="h-5 w-5 text-primary" />
-                                Cliente
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {selectedClient ? (
-                                <div className="flex items-center gap-2 bg-primary/10 border border-primary rounded-xl py-3 px-2">
-                                    <CheckCircle className="h-4 w-4 text-primary " />
-                                    <span className="font-medium">
-                                        {selectedClient.name}
-                                    </span>
-                                    {selectedClient.phone && (
-                                        <span className="text-sm text-gray-500 ml-1">
-                                            ({selectedClient.phone})
+                {isLoadingProducts ? (
+                    <RegisterSaleSkeleton />
+                ) : (
+                    <div className="space-y-4 mt-4">
+                        {/* Información principal */}
+                        <Card>
+                            <CardHeader className='-mb-4'>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <CheckCircle className="h-5 w-5 text-primary" />
+                                    Cliente
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {selectedClient ? (
+                                    <div className="flex items-center gap-2 bg-primary/10 border border-primary rounded-xl py-3 px-2">
+                                        <CheckCircle className="h-4 w-4 text-primary " />
+                                        <span className="font-medium">
+                                            {selectedClient.name}
                                         </span>
-                                    )}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="ml-auto text-red-600 hover:bg-red-50 p-1 h-auto"
-                                        onClick={() => setSelectedClient(null)}
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            ) : (
-                                <>
-                                    <ClientSearch
-                                        clients={clients}
-                                        selectedClient={undefined}
-                                        onSelect={setSelectedClient}
-                                        searchQuery={searchQuery}
-                                        setSearchQuery={setSearchQuery}
-                                        isLoading={isLoadingClients}
-                                    />
-                                    <div className="text-sm text-muted-foreground mt-2">
-                                        Introduzca el nombre del cliente para buscarlo
-                                    </div>
-                                </>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className='-mb-4'>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <Coins className="h-5 w-5 text-primary" />
-                                Método de pago
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <RadioGroup
-                                value={selectedPayment}
-                                onValueChange={v => setSelectedPayment(v as any)}
-                                className="flex flex-col sm:flex-row gap-2"
-                            >
-                                {[
-                                    { value: 'CASH', label: 'Efectivo', icon: MoneySVG },
-                                    { value: 'YAPE', label: 'Yape', icon: SmartPhoneSVG }
-                                ].map(method => (
-                                    <label
-                                        key={method.value}
-                                        htmlFor={method.value}
-                                        className={`flex items-center space-x-3 border p-3 rounded-xl cursor-pointer flex-1 transition-all ${selectedPayment === method.value
-                                            ? 'border-primary bg-primary/5'
-                                            : 'hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        <RadioGroupItem value={method.value} id={method.value} className="sr-only" />
-                                        <div
-                                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === method.value
-                                                ? 'border-primary bg-primary'
-                                                : 'border-gray-300'
-                                                }`}
-                                        >
-                                            {selectedPayment === method.value && (
-                                                <div className="w-2 h-2 rounded-full bg-white" />
-                                            )}
-                                        </div>
-                                        <img
-                                            src={method.icon}
-                                            alt={method.value}
-                                            className="h-5 w-5"
-                                        />
-                                        <span className="font-medium">{method.label}</span>
-                                    </label>
-                                ))}
-                            </RadioGroup>
-                        </CardContent>
-                    </Card>
-
-                    {/* Información de venta */}
-                    <Card>
-                        <CardHeader className="-mb-4 flex flex-row items-center justify-between">
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <ShoppingCart className="h-5 w-5 text-primary" />
-                                Ítems ({orderItems.length})
-                            </CardTitle>
-                            <Button size="sm" variant="default" onClick={openAddItemDialog}>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Agregar ítem
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="pt-2">
-                            {orderItems.length === 0 ? (
-                                <div className="text-center py-10 border border-dashed border-gray-200 rounded-lg bg-gray-50">
-                                    <div className="flex flex-col items-center space-y-2">
-                                        <ShoppingCart className="h-12 w-12 text-gray-400" />
-                                        <div className="text-gray-500 font-medium">No hay ítems agregados</div>
+                                        {selectedClient.phone && (
+                                            <span className="text-sm text-gray-500 ml-1">
+                                                ({selectedClient.phone})
+                                            </span>
+                                        )}
                                         <Button
-                                            variant="outline"
-                                            className="mt-2"
-                                            onClick={openAddItemDialog}
+                                            variant="ghost"
+                                            size="sm"
+                                            className="ml-auto text-red-600 hover:bg-red-50 p-1 h-auto"
+                                            onClick={() => setSelectedClient(null)}
                                         >
-                                            <Plus className="w-4 h-4 mr-2" />
-                                            Agregar el primer ítem
+                                            <X className="h-4 w-4" />
                                         </Button>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden shadow-sm">
-                                    {orderItems.map((oi, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="py-3 px-4 hover:bg-gray-50 flex justify-between text-sm items-center"
-                                            onClick={() => openEditItemDialog(idx)}
-                                        >
-                                            <div className="flex-1">
-                                                <span className="font-medium">{oi.item.name}</span>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div className='flex items-center gap-1'>
-                                                                <ArrowUpCircle className="w-4 h-4 text-green-600" />
-                                                                <span>{oi.sold}</span>
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Vendidos: {oi.sold} unidades</p>
-                                                            <p className="text-xs text-gray-500">
-                                                                {formatCurrency(oi.negotiatedPrice ?? oi.item.basePrice)} c/u
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
+                                ) : (
+                                    <>
+                                        <ClientSearch
+                                            clients={clients}
+                                            selectedClient={undefined}
+                                            onSelect={setSelectedClient}
+                                            searchQuery={searchQuery}
+                                            setSearchQuery={setSearchQuery}
+                                            isLoading={isLoadingClients}
+                                        />
+                                        <div className="text-sm text-muted-foreground mt-2">
+                                            Introduzca el nombre del cliente para buscarlo
+                                        </div>
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <div className='flex items-center gap-1'>
-                                                                <ArrowDownCircle className="w-4 h-4 text-red-600" />
-                                                                <span>{oi.returned}</span>
-                                                            </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Devueltos: {oi.returned} unidades</p>
-                                                            <p className="text-xs text-gray-500">
-                                                                {formatCurrency(oi.negotiatedCylinderPrice ?? oi.item.emptyCylinderPrice)} c/u
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
+                        <Card>
+                            <CardHeader className='-mb-4'>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Coins className="h-5 w-5 text-primary" />
+                                    Método de pago
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <RadioGroup
+                                    value={selectedPayment}
+                                    onValueChange={v => setSelectedPayment(v as any)}
+                                    className="flex flex-col sm:flex-row gap-2"
+                                >
+                                    {[
+                                        { value: 'CASH', label: 'Efectivo', icon: MoneySVG },
+                                        { value: 'YAPE', label: 'Yape', icon: SmartPhoneSVG }
+                                    ].map(method => (
+                                        <label
+                                            key={method.value}
+                                            htmlFor={method.value}
+                                            className={`flex items-center space-x-3 border p-3 rounded-xl cursor-pointer flex-1 transition-all ${selectedPayment === method.value
+                                                ? 'border-primary bg-primary/5'
+                                                : 'hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            <RadioGroupItem value={method.value} id={method.value} className="sr-only" />
+                                            <div
+                                                className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === method.value
+                                                    ? 'border-primary bg-primary'
+                                                    : 'border-gray-300'
+                                                    }`}
+                                            >
+                                                {selectedPayment === method.value && (
+                                                    <div className="w-2 h-2 rounded-full bg-white" />
+                                                )}
                                             </div>
-                                            <div className="flex items-center gap-2 ml-2">
-                                                <span className="font-medium">
-                                                    {formatCurrency(
-                                                        (oi.negotiatedPrice ?? oi.item.basePrice) * oi.sold -
-                                                        (oi.negotiatedCylinderPrice ?? oi.item.emptyCylinderPrice) * oi.returned
-                                                    )}
-                                                </span>
-                                                <div className="flex">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-7 w-7 text-gray-500 hover:text-red-600"
-                                                        onClick={(e) => {
-                                                            e.preventDefault()
-                                                            e.stopPropagation()
-                                                            removeItem(idx)
-                                                        }}
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </Button>
+                                            <img
+                                                src={method.icon}
+                                                alt={method.value}
+                                                className="h-5 w-5"
+                                            />
+                                            <span className="font-medium">{method.label}</span>
+                                        </label>
+                                    ))}
+                                </RadioGroup>
+                            </CardContent>
+                        </Card>
+
+                        {/* Información de venta */}
+                        <Card>
+                            <CardHeader className="-mb-4 flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <ShoppingCart className="h-5 w-5 text-primary" />
+                                    Ítems ({orderItems.length})
+                                </CardTitle>
+                                <Button size="sm" variant="default" onClick={openAddItemDialog}>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Agregar ítem
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="pt-2">
+                                {orderItems.length === 0 ? (
+                                    <div className="text-center py-10 border border-dashed border-gray-200 rounded-lg bg-gray-50">
+                                        <div className="flex flex-col items-center space-y-2">
+                                            <ShoppingCart className="h-12 w-12 text-gray-400" />
+                                            <div className="text-gray-500 font-medium">No hay ítems agregados</div>
+                                            <Button
+                                                variant="outline"
+                                                className="mt-2"
+                                                onClick={openAddItemDialog}
+                                            >
+                                                <Plus className="w-4 h-4 mr-2" />
+                                                Agregar el primer ítem
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+                                        {orderItems.map((oi, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="py-3 px-4 hover:bg-gray-50 flex justify-between text-sm items-center"
+                                                onClick={() => openEditItemDialog(idx)}
+                                            >
+                                                <div className="flex-1">
+                                                    <span className="font-medium">{oi.item.name}</span>
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <div className='flex items-center gap-1'>
+                                                                    <ArrowUpCircle className="w-4 h-4 text-green-600" />
+                                                                    <span>{oi.sold}</span>
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Vendidos: {oi.sold} unidades</p>
+                                                                <p className="text-xs text-gray-500">
+                                                                    {formatCurrency(oi.negotiatedPrice ?? oi.item.basePrice)} c/u
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <div className='flex items-center gap-1'>
+                                                                    <ArrowDownCircle className="w-4 h-4 text-red-600" />
+                                                                    <span>{oi.returned}</span>
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Devueltos: {oi.returned} unidades</p>
+                                                                <p className="text-xs text-gray-500">
+                                                                    {formatCurrency(oi.negotiatedCylinderPrice ?? oi.item.emptyCylinderPrice)} c/u
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
+                                                <div className="flex items-center gap-2 ml-2">
+                                                    <span className="font-medium">
+                                                        {formatCurrency(
+                                                            (oi.negotiatedPrice ?? oi.item.basePrice) * oi.sold -
+                                                            (oi.negotiatedCylinderPrice ?? oi.item.emptyCylinderPrice) * oi.returned
+                                                        )}
+                                                    </span>
+                                                    <div className="flex">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7 text-gray-500 hover:text-red-600"
+                                                            onClick={(e) => {
+                                                                e.preventDefault()
+                                                                e.stopPropagation()
+                                                                removeItem(idx)
+                                                            }}
+                                                        >
+                                                            <Trash2 className="w-3 h-3" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {orderItems.length > 0 && (
-                                <div className="mt-4 flex flex-col space-y-2">
-                                    <div className="flex justify-between items-center py-2 px-4 rounded-lg mt-2 font-bold">
-                                        <span>Total:</span>
-                                        <span className="text-xl text-gray-950">{formatCurrency(calculateTotal())}</span>
+                                        ))}
                                     </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                )}
 
-                    <Button
-                        className="w-full py-6 text-lg  transition-all"
-                        onClick={() => setIsConfirmationDialogOpen(true)}
-                        disabled={isSubmittingSale || orderItems.length === 0 || !selectedClient}
-                    >
-                        {isSubmittingSale ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : null}
-                        Registrar Venta
-                    </Button>
-                </div>
+                                {orderItems.length > 0 && (
+                                    <div className="mt-4 flex flex-col space-y-2">
+                                        <div className="flex justify-between items-center py-2 px-4 rounded-lg mt-2 font-bold">
+                                            <span>Total:</span>
+                                            <span className="text-xl text-gray-950">{formatCurrency(calculateTotal())}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        <Button
+                            className="w-full py-6 text-lg  transition-all"
+                            onClick={() => setIsConfirmationDialogOpen(true)}
+                            disabled={isSubmittingSale || orderItems.length === 0 || !selectedClient}
+                        >
+                            {isSubmittingSale ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : null}
+                            Registrar Venta
+                        </Button>
+                    </div>
+                )}
             </div >
 
             {/* Dialog para agregar/editar artículo */}
@@ -615,7 +664,7 @@ export function RegisterSalePage() {
                                         <div>
                                             <div className="flex items-center justify-between">
                                                 <Label className={cn(!prod.allowCylinderNegotiation && "text-gray-500")}>
-                                                    Precio cilindro (S/)
+                                                    Precio balón (S/)
                                                 </Label>
                                                 {!prod.allowCylinderNegotiation && (
                                                     <Badge variant="outline" className="text-xs">Fijo</Badge>
@@ -668,8 +717,7 @@ export function RegisterSalePage() {
                                 onClick={updateOrderItem}
                                 disabled={
                                     !tempItem.itemId ||
-                                    (parseInt(tempItem.sold || '0', 10) === 0 && parseInt(tempItem.returned || '0', 10) === 0)
-                                }
+                                    (parseInt(tempItem.sold || '0', 10) === 0 && parseInt(tempItem.returned || '0', 10) === 0)}
                             >
                                 {editingItemIndex !== null ? 'Guardar cambios' : 'Agregar'}
                             </Button>

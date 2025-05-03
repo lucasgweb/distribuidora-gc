@@ -166,12 +166,12 @@ export function HomePage() {
             {/* Header */}
             <header className="bg-white px-4">
                 <div className="max-w-6xl mx-auto">
-                    <div className="flex items-center justify-between">
-                        <Header title={`Hola ${user!.name.split(" ")[0]} 👋`} />
+                    <div className="flex flex-col items-center justify-between">
+                        <Header showMenu title="Início" />
 
                         {/* Status Desktop */}
-                        <div className="hidden md:flex gap-4">
-                            <Card className="w-[200px]">
+                        <div className="hidden md:flex gap-4 px-4 w-full">
+                            <Card className="flex flex-1 w-full">
                                 <CardHeader className="pb-2">
                                     <CardDescription className="flex items-center justify-between">
                                         Ventas totales <HandCoins className="h-4 w-4" />
@@ -187,7 +187,7 @@ export function HomePage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="w-[200px]">
+                            <Card className="flex flex-1 w-full">
                                 <CardHeader className="pb-2">
                                     <CardDescription className="flex items-center justify-between">
                                         Ventas <Clipboard className="h-4 w-4" />
@@ -248,7 +248,7 @@ export function HomePage() {
             </header>
 
             {/* Conteúdo Principal */}
-            <main className="max-w-6xl mx-auto px-4 mt-4 mb-22 space-y-6">
+            <main className="max-w-6xl mx-auto mt-4 px-4 mb-22 space-y-6">
                 {/* Gráfico de vendas por dia */}
                 <SalesByDayChart data={dashboardData.salesByDay as SalesByDay[]} />
 
@@ -272,9 +272,9 @@ export function HomePage() {
                                 <CardTitle>S/N vs ayer</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-32 flex items-center justify-center">
-                                    <span className="text-muted-foreground">Gráfico (placeholder)</span>
-                                </div>
+                                {dashboardData.recentSales.map((sale) => (
+                                    <SaleCard key={sale.id} sale={sale} />
+                                ))}
                             </CardContent>
                         </Card>
                     </div>
