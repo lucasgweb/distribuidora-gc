@@ -48,7 +48,7 @@ export function ProductListPage() {
         <>
             <div className="flex flex-col px-4 max-w-6xl mx-auto min-h-screen bg-white">
                 <Header title="Productos" showMenu />
-                <div className="pt-4 pb-4  mx-auto w-full">
+                <div className="pt-4   mx-auto w-full pb-24">
                     <div className="flex items-center w-full justify-between gap-2">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />

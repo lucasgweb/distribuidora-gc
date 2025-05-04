@@ -1,105 +1,41 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { ArrowRight, IdCard, Loader2, Mail, MapPin, Phone, Plus } from 'lucide-react';
-import { ClientDTO } from '../dtos/client.dto';
 import { Card, CardContent } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
-import { listClients } from '../services/clients.service';
 import { formatPhoneNumber } from 'react-phone-number-input';
 import { useDebounce } from 'use-debounce';
 import { BottomNav } from '../components/bottom-nav';
-
-const PAGE_SIZE = 10;
+import { useInfiniteClients } from '../queries/clients';
 
 export function ClientListPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const [debouncedSearch] = useDebounce(search, 300);
-    const [clients, setClients] = useState<ClientDTO[]>([]);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(false);
-    const [isSearching, setIsSearching] = useState(false);
-    const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-    const currentPageRef = useRef(page);
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        isError
+    } = useInfiniteClients({
+        search: debouncedSearch || undefined,
+        pageSize: 10,
+    });
+
+    const clients = data ? data.pages.flatMap(page => page.clients) : [];
+
     const observerRef = useRef<HTMLDivElement | null>(null);
-    const loadingRef = useRef(loading);
-    const hasMoreRef = useRef(hasMore);
-    const initialLoadDoneRef = useRef(initialLoadDone);
 
-    // Atualiza as referências quando os estados mudam
-    useEffect(() => {
-        currentPageRef.current = page;
-        loadingRef.current = loading;
-        hasMoreRef.current = hasMore;
-        initialLoadDoneRef.current = initialLoadDone;
-    }, [page, loading, hasMore, initialLoadDone]);
-
-    const loadClients = useCallback(async (forceReset = false) => {
-        if (loadingRef.current || (!forceReset && !hasMoreRef.current)) return;
-
-        setLoading(true);
-        try {
-            const currentPage = forceReset ? 1 : currentPageRef.current;
-
-            const data = await listClients({
-                search: debouncedSearch || undefined,
-                page: currentPage,
-                pageSize: PAGE_SIZE,
-            });
-
-            setClients(prev => {
-                return currentPage === 1 ? data.clients : [...prev, ...data.clients];
-            });
-
-            setHasMore(data.total > currentPage * PAGE_SIZE);
-
-            if (!initialLoadDoneRef.current) {
-                setInitialLoadDone(true);
-            }
-
-        } catch (error) {
-            console.error('Erro ao carregar clientes:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, [debouncedSearch]);
-
-    // Efeito para busca - resetar e carregar a primeira página
-    useEffect(() => {
-        setIsSearching(true);
-        setClients([]);
-        setPage(1);
-        currentPageRef.current = 1;
-        setHasMore(true);
-        setInitialLoadDone(false);
-
-        const timer = setTimeout(() => {
-            loadClients(true).finally(() => setIsSearching(false));
-        }, 100);
-
-        return () => clearTimeout(timer);
-    }, [debouncedSearch, loadClients]);
-
-    // Efeito para carregar mais clientes quando a página muda
-    useEffect(() => {
-        if (page !== 1) {
-            loadClients();
-        }
-    }, [page, loadClients]);
-
-    // Observer de interseção para paginação infinita
     useEffect(() => {
         const observer = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting &&
-                hasMoreRef.current &&
-                !loadingRef.current &&
-                initialLoadDoneRef.current) {
-                setPage(prev => prev + 1);
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
             }
         }, { threshold: 0.1 });
 
@@ -109,9 +45,8 @@ export function ClientListPage() {
         return () => {
             if (current) observer.unobserve(current);
         };
-    }, []);
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-    // Función para renderizar skeletons de clientes
     const renderClientSkeletons = (count = 5) => {
         return Array(count).fill(0).map((_, index) => (
             <Card key={`skeleton-${index}`} className="overflow-hidden">
@@ -154,7 +89,7 @@ export function ClientListPage() {
             <div className="flex px-4 flex-col min-h-screen">
                 <Header title="Clientes" showMenu />
 
-                <div className="pt-4 pb-4 max-w-6xl mx-auto w-full">
+                <div className="pt-4 pb-14 max-w-6xl mx-auto w-full">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-1 relative">
                             <Input
@@ -171,19 +106,30 @@ export function ClientListPage() {
                     </div>
 
                     <div className="mt-4 space-y-3">
-                        {/* Mostrar skeletons durante la carga inicial o búsqueda */}
-                        {(loading && page === 1) || (isSearching && clients.length === 0) ? (
-                            renderClientSkeletons()
-                        ) : null}
+                        {/* Mostrar skeletons durante o carregamento inicial */}
+                        {isLoading ? renderClientSkeletons() : null}
 
-                        {/* Mostrar clientes cuando están cargados */}
+                        {/* Mostrar mensagem de erro */}
+                        {isError && (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <div className="bg-red-100 rounded-full p-4 mb-3">
+                                    <IdCard className="h-8 w-8 text-red-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-red-800">Error al cargar los clientes</h3>
+                                <p className="text-sm text-red-500 mt-1">
+                                    Intenta recargar la página
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Mostrar clientes quando estão carregados */}
                         {clients.map(client => (
                             <Card
                                 key={client.id}
                                 className="cursor-pointer hover:bg-gray-50 transition-colors group"
                                 onClick={() => navigate(`/clients/${client.id}`)}
                             >
-                                <CardContent >
+                                <CardContent>
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2">
@@ -231,16 +177,18 @@ export function ClientListPage() {
                             </Card>
                         ))}
 
-                        {/* Mostrar skeleton al cargar más páginas */}
-                        {loading && page > 1 && (
+                        {/* Mostrar loader ao carregar mais páginas */}
+                        {isFetchingNextPage && (
                             <div className="flex justify-center py-4">
                                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
                             </div>
                         )}
 
+                        {/* Elemento observado para a paginação infinita */}
                         <div ref={observerRef} className="h-6" />
 
-                        {!loading && !isSearching && clients.length === 0 && (
+                        {/* Mostrar mensagem quando não há resultados */}
+                        {!isLoading && clients.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <div className="bg-gray-100 rounded-full p-4 mb-3">
                                     <IdCard className="h-8 w-8 text-gray-400" />

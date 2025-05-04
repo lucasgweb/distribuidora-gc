@@ -104,7 +104,7 @@ export function Header({
                 to="/profile"
                 className="hover:ring-2 ring-blue-200 rounded-full transition-all"
             >
-                <Avatar className="w-10 h-10 border-2 bg-gray-50 border-white">
+                <Avatar className="w-12 h-12 border-2 bg-gray-50 border-white">
                     <AvatarImage src={user?.avatarUrl} />
                     <AvatarFallback className="bg-white p-1">
                         <img
@@ -151,7 +151,7 @@ export function Header({
 
                 {/* Columna central: Título siempre centrado */}
                 <div className="flex justify-center">
-                    <h1 className="text-lg font-semibold text-center">
+                    <h1 className="text-lg font-semibold text-center text-nowrap">
                         {title}
                     </h1>
                 </div>

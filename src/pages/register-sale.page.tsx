@@ -732,7 +732,7 @@ export function RegisterSalePage() {
                     <div className="p-4 pb-0">
                         <DialogTitle className="text-lg font-semibold mb-2">Seleccionar producto</DialogTitle>
                         <div className="relative mb-2">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 mt-[6px] text-gray-500" />
                             <Input
                                 placeholder="Buscar producto..."
                                 value={productSearch}

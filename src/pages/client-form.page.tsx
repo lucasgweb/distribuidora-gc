@@ -7,10 +7,12 @@ import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Skeleton } from '../components/ui/skeleton';
 import { ClientDTO } from '../dtos/client.dto';
-import { createClient, getClient, updateClient } from '../services/clients.service';
 import { toast } from 'sonner';
 
-// Componente de skeleton para los campos del formulario
+// Importar os hooks do React Query
+import { useClient, useCreateClient, useUpdateClient } from '../queries/clients';
+
+// Componentes de Skeleton permanecem os mesmos...
 const FormFieldSkeleton = ({ hasLabel = true }: { hasLabel?: boolean }) => (
     <div className="space-y-2">
         {hasLabel && <Skeleton className="h-4 w-24" />}
@@ -18,7 +20,6 @@ const FormFieldSkeleton = ({ hasLabel = true }: { hasLabel?: boolean }) => (
     </div>
 );
 
-// Componente para la versión skeleton del formulario
 const ClientFormSkeleton = () => (
     <div className="space-y-4">
         <div className="grid gap-4">
@@ -40,19 +41,22 @@ const ClientFormSkeleton = () => (
     </div>
 );
 
-// Función para formatear número de teléfono para Perú (+51)
 function formatPhoneNumber(value: string): string {
+    // Remover todos os caracteres não numéricos
     let cleaned = value.replace(/\D/g, '');
 
+    // Remover o prefixo +51 se já estiver presente
     if (cleaned.startsWith('51')) {
         cleaned = cleaned.substring(0, 11);
     } else {
+        // Adicionar o prefixo 51 se não estiver presente e limitar a 9 dígitos depois
         cleaned = '51' + cleaned;
         cleaned = cleaned.substring(0, 11);
     }
 
     if (cleaned.length === 0) return '';
 
+    // Formato para exibição: +51 XXX XXX XXX
     const countryCode = cleaned.substring(0, 2);
     const rest = cleaned.substring(2);
 
@@ -87,9 +91,21 @@ function isValidDNIorRUC(value: string): boolean {
 export function ClientFormPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const isNewClient = !id || id === 'new';
 
+    const {
+        data: clientData,
+        isLoading: isLoadingClient
+    } = useClient(id || '', {
+        enabled: !isNewClient
+    });
+
+    // Use os hooks de mutação do React Query
+    const createClientMutation = useCreateClient();
+    const updateClientMutation = useUpdateClient();
+
+    // Estado local para o formulário
     const [client, setClient] = useState<ClientDTO>({
         id: '',
         name: '',
@@ -102,27 +118,13 @@ export function ClientFormPage() {
     });
 
     useEffect(() => {
-        async function loadClient() {
-            if (id && id !== 'new') {
-                try {
-                    const data = await getClient(id);
-                    setClient({
-                        ...data,
-                        phone: formatPhoneNumber(data.phone),
-                    });
-                } catch (error) {
-                    console.error('Error loading client:', error);
-                    toast.error('Error al cargar el cliente');
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                setLoading(false);
-            }
+        if (clientData) {
+            setClient({
+                ...clientData,
+                phone: formatPhoneNumber(clientData.phone),
+            });
         }
-
-        loadClient();
-    }, [id]);
+    }, [clientData]);
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
@@ -160,19 +162,19 @@ export function ClientFormPage() {
 
         try {
             const cleanedPhone = client.phone.replace(/\s/g, '');
+            const clientData = {
+                ...client,
+                phone: cleanedPhone,
+            };
 
-            if (id && id !== 'new') {
-                await updateClient({
-                    ...client,
-                    phone: cleanedPhone,
-                });
-                toast.success('Cliente actualizado correctamente');
-            } else {
-                await createClient({
-                    ...client,
-                    phone: cleanedPhone,
-                });
+            if (isNewClient) {
+                // Criar novo cliente usando a mutação
+                await createClientMutation.mutateAsync(clientData);
                 toast.success('Cliente creado correctamente');
+            } else {
+                // Atualizar cliente existente usando a mutação
+                await updateClientMutation.mutateAsync(clientData);
+                toast.success('Cliente actualizado correctamente');
             }
 
             navigate('/clients');
@@ -202,15 +204,18 @@ export function ClientFormPage() {
         }
     };
 
+    // Determina se o formulário está carregando
+    const isLoading = isLoadingClient || createClientMutation.isPending || updateClientMutation.isPending;
+
     return (
         <div className="flex px-6 flex-col min-h-screen">
             <Header
-                title={id && id !== 'new' ? 'Editar Cliente' : 'Nuevo Cliente'}
+                title={isNewClient ? 'Nuevo Cliente' : 'Editar Cliente'}
                 onBack={() => navigate('/clients')}
             />
 
             <div className="pt-4 pb-4 max-w-2xl mx-auto w-full">
-                {loading ? (
+                {isLoadingClient ? (
                     <ClientFormSkeleton />
                 ) : (
                     <form onSubmit={handleSubmit}>
@@ -272,11 +277,16 @@ export function ClientFormPage() {
                                     variant="outline"
                                     className="flex-1"
                                     onClick={() => navigate('/clients')}
+                                    disabled={isLoading}
                                 >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" className="flex-1">
-                                    {id && id !== 'new' ? 'Guardar Cambios' : 'Crear Cliente'}
+                                <Button
+                                    type="submit"
+                                    className="flex-1"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? 'Guardando...' : isNewClient ? 'Crear Cliente' : 'Guardar Cambios'}
                                 </Button>
                             </div>
                         </div>

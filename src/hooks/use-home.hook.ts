@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
 import { getAuthStore } from '../utils/get-auth-store.util'
 import { getDashboardData, DashboardData } from '../services/dashboard.service'
+import { useQuery } from '@tanstack/react-query'
 
 export function useHome() {
   // Dados de autenticação
@@ -8,37 +8,25 @@ export function useHome() {
   const token = state?.token
   const user = state?.user
 
-  // Estados para dados do dashboard
-  const [dashboardData, setDashboardData] = useState<DashboardData>()
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isError, setIsError] = useState<boolean>(false)
-  const [error, setError] = useState<unknown>(null)
+  const { 
+    data: dashboardData,
+    isLoading,
+    error,
+  } = useQuery<DashboardData>({
+    queryKey: ['dashboard'],
+    queryFn: getDashboardData,
+    staleTime: 1000 * 60 * 5, // Dados considerados "frescos" por 5 minutos
+    gcTime: 1000 * 60 * 15, // Mantém os dados em cache por 15 minutos
+    refetchOnWindowFocus: false, // Não refaz a busca quando a janela ganha foco
+  })
 
-  useEffect(() => {
-    if (!token) return
 
-    async function fetchDashboard() {
-      setIsLoading(true)
-      setIsError(false)
-      try {
-        const data = await getDashboardData()
-        setDashboardData(data)
-      } catch (err) {
-        setError(err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchDashboard()
-  }, [token])
 
   return {
     token,
     user,
     dashboardData,
     isLoading,
-    isError,
     error,
   }
 }
