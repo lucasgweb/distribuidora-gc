@@ -5,7 +5,7 @@ import { getAuthStore } from '../utils/get-auth-store.util';
 
 export const api = axios.create({
   //baseURL: "http://localhost:3333",
-  baseURL: 'https://distribuidora-gc-api.onrender.com',
+  baseURL: 'https://distribuidora-gc-api-production.up.railway.app',
 });
 
 
