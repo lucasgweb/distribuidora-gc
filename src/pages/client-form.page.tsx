@@ -81,7 +81,13 @@ function isValidDNI(dni: string): boolean {
 }
 
 function isValidRUC(ruc: string): boolean {
-    return /^(10|20)\d{9}$/.test(ruc);
+    // 1) Tem que ser exatamente 11 dígitos
+    if (!/^\d{11}$/.test(ruc)) {
+        return false;
+    }
+
+    return true
+
 }
 
 function isValidDNIorRUC(value: string): boolean {
