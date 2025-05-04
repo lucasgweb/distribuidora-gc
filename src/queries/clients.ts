@@ -1,6 +1,7 @@
 // src/queries/clients.ts
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query'
 import { 
+    ClientDTO,
   CreateClientDTO, 
   UpdateClientDTO 
 } from '../dtos/client.dto'
@@ -41,11 +42,15 @@ export function useInfiniteClients(params: Omit<ListClientsParams, 'page'> = {})
   })
 }
 
-export function useClient(id: string, p0: { enabled: boolean }) {
+export function useClient(
+  id: string,
+  options?: Omit<UseQueryOptions<ClientDTO, Error>, 'queryKey' | 'queryFn'>
+) {
   return useQuery({
     queryKey: clientKeys.detail(id),
     queryFn: () => getClient(id),
     enabled: !!id,
+    ...options,
   })
 }
 
