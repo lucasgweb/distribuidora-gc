@@ -93,7 +93,7 @@ export function EditProfilePage() {
     return (
         <>
             <div className="flex flex-col h-screen max-w-6xl mx-auto px-4 ">
-                <Header title="Editar perfil" onBack={() => navigate(-1)} />
+                <Header title="Editar perfil" onBack={() => navigate(-1)} hideAvatar />
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-4">

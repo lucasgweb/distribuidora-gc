@@ -218,6 +218,7 @@ export function ClientFormPage() {
             <Header
                 title={isNewClient ? 'Nuevo Cliente' : 'Editar Cliente'}
                 onBack={() => navigate('/clients')}
+                hideAvatar
             />
 
             <div className="pt-4 pb-4 max-w-2xl mx-auto w-full">

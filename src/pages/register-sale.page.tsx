@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
@@ -14,76 +14,52 @@ import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import {
     X, Plus, ArrowUpCircle, ArrowDownCircle, Loader2,
     CheckCircle, Search, CheckIcon, Info, ShoppingCart,
-    Trash2,
-    Coins
+    Trash2, Coins, User
 } from 'lucide-react';
-import { listClients } from '../services/clients.service';
-import { listProducts } from '../services/products.service';
 import { ProductDTO } from '../dtos/product.dto';
-import { CreateSaleDTO } from '../dtos/sale.dto';
-import { createSale } from '../services/sales.service';
 import { toast } from 'sonner';
 import { MoneyInput } from '../components/ui/money-input';
 import { formatCurrency } from '../utils/format-currency';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from '../components/ui/dialog';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { cn } from '../lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
+import { Separator } from '../components/ui/separator';
 
-// Componentes de Skeleton
-const ClientCardSkeleton = () => (
-    <Card>
-        <CardHeader className='-mb-4'>
-            <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent className="py-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-4 w-56 mt-2" />
-        </CardContent>
-    </Card>
-);
+// Importar os hooks do React Query
+import { useListClients } from '../queries/clients';
+import { useListProducts } from '../queries/products';
+import { useCreateSale } from '../queries/sales';
+import { useDebounce } from 'use-debounce';
 
-const PaymentMethodSkeleton = () => (
-    <Card>
-        <CardHeader className='-mb-4'>
-            <Skeleton className="h-6 w-40" />
-        </CardHeader>
-        <CardContent className="py-4">
-            <div className="flex flex-col sm:flex-row gap-2">
-                {[1, 2].map((i) => (
-                    <Skeleton key={i} className="h-14 flex-1 rounded-xl" />
-                ))}
-            </div>
-        </CardContent>
-    </Card>
-);
-
-const ItemsCardSkeleton = () => (
-    <Card>
-        <CardHeader className="-mb-4 flex flex-row items-center justify-between">
-            <Skeleton className="h-6 w-28" />
-            <Skeleton className="h-9 w-32" />
-        </CardHeader>
-        <CardContent className="pt-6">
-            <Skeleton className="h-40 w-full rounded-lg" />
-        </CardContent>
-    </Card>
-);
-
+// Componente de Skeleton simplificado
 const RegisterSaleSkeleton = () => (
-    <div className="space-y-4 mt-4">
-        <ClientCardSkeleton />
-        <PaymentMethodSkeleton />
-        <ItemsCardSkeleton />
-        <Skeleton className="h-12 w-full" />
+    <div className="space-y-6 mt-4">
+        <div>
+            <Skeleton className="h-6 w-32 mb-3" />
+            <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div>
+            <Skeleton className="h-6 w-40 mb-3" />
+            <div className="flex gap-2">
+                <Skeleton className="h-12 flex-1 rounded-xl" />
+                <Skeleton className="h-12 flex-1 rounded-xl" />
+            </div>
+        </div>
+
+        <div>
+            <div className="flex justify-between mb-3">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-9 w-28" />
+            </div>
+            <Skeleton className="h-40 w-full rounded-xl" />
+        </div>
+
+        <Skeleton className="h-12 w-full mt-6" />
     </div>
 );
 
@@ -100,22 +76,39 @@ export function RegisterSalePage() {
 
     // Clientes
     const [searchQuery, setSearchQuery] = useState('');
-    const [clients, setClients] = useState<ClientDTO[]>([]);
+    const [debouncedSearch] = useDebounce(searchQuery, 300);
     const [selectedClient, setSelectedClient] = useState<ClientDTO | null>(null);
-    const [isLoadingClients, setIsLoadingClients] = useState(false);
+
+    // Hook para buscar clientes com React Query
+    const {
+        data: clientsData,
+        isLoading: isLoadingClients
+    } = useListClients({
+        search: debouncedSearch,
+        pageSize: 10
+    });
+
+    // Extrai a lista de clientes ou usa um array vazio se não houver dados
+    const clients = clientsData?.clients || [];
 
     // Productos
-    const [products, setProducts] = useState<ProductDTO[]>([]);
-    const [isLoadingProducts, setIsLoadingProducts] = useState(false);
     const [productSearch, setProductSearch] = useState('');
     const [filteredProducts, setFilteredProducts] = useState<ProductDTO[]>([]);
     const [recentlyUsedProducts, setRecentlyUsedProducts] = useState<ProductDTO[]>([]);
+
+    // Hook para buscar produtos com React Query
+    const {
+        data: productsData,
+        isLoading: isLoadingProducts
+    } = useListProducts();
+
+    // Extrai a lista de produtos ou usa um array vazio se não houver dados
+    const products = productsData?.products || [];
 
     // Venta
     const [selectedPayment, setSelectedPayment] = useState<'CASH' | 'YAPE'>('CASH');
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isSubmittingSale, setIsSubmittingSale] = useState(false);
     const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
 
     // Producto selector dialog
@@ -125,6 +118,9 @@ export function RegisterSalePage() {
     // Confirmación de venta
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
 
+    // Hook de mutação para criar venda
+    const createSaleMutation = useCreateSale();
+
     const [tempItem, setTempItem] = useState<{
         itemId: string | null;
         sold: string;
@@ -133,7 +129,7 @@ export function RegisterSalePage() {
         negotiatedCylinderPrice?: number;
     }>({ itemId: null, sold: '', returned: '' });
 
-    // Actualiza productos filtrados cuando cambia la búsqueda
+    // Atualiza produtos filtrados quando a busca muda
     useEffect(() => {
         if (!productSearch.trim()) {
             if (selectedTab === 'todos') {
@@ -154,48 +150,32 @@ export function RegisterSalePage() {
         setFilteredProducts(filtered);
     }, [productSearch, products, selectedTab, recentlyUsedProducts]);
 
-    // Cargar productos
+    // Inicializar produtos recentes quando os dados de produtos são carregados
     useEffect(() => {
-        (async () => {
-            setIsLoadingProducts(true);
-            try {
-                const res = await listProducts({});
-                setProducts(res.products);
-                setFilteredProducts(res.products);
-
-                // Simulando produtos usados recentemente (normalmente seria carregado de localStorage ou API)
-                if (res.products.length > 0) {
-                    const recentProducts = res.products.slice(0, Math.min(5, res.products.length));
-                    setRecentlyUsedProducts(recentProducts);
-                }
-            } catch (err) {
-                console.error('Error al cargar productos:', err);
-                toast.error('Error al cargar productos');
-            } finally {
-                setIsLoadingProducts(false);
-            }
-        })();
-    }, []);
-
-    // Buscar clientes
-    useEffect(() => {
-        setIsLoadingClients(true);
-        const h = setTimeout(async () => {
-            if (searchQuery) {
+        if (products.length > 0) {
+            // Inicializar produtos recentes a partir do localStorage ou usar os primeiros produtos
+            const storedRecentProducts = localStorage.getItem('recentProducts');
+            if (storedRecentProducts) {
                 try {
-                    const res = await listClients({ search: searchQuery });
-                    setClients(res.clients);
-                } catch (err) {
-                    console.error('Error en búsqueda de clientes:', err);
-                    toast.error('Error al buscar clientes');
+                    const recentIds = JSON.parse(storedRecentProducts);
+                    const recentProds = recentIds
+                        .map((id: string) => products.find(p => p.id === id))
+                        .filter(Boolean);
+                    setRecentlyUsedProducts(recentProds);
+                } catch (error) {
+                    console.error('Error parsing stored recent products:', error);
+                    // Fallback: usar os primeiros 5 produtos
+                    setRecentlyUsedProducts(products.slice(0, Math.min(5, products.length)));
                 }
             } else {
-                setClients([]);
+                // Sem histórico: usar os primeiros 5 produtos
+                setRecentlyUsedProducts(products.slice(0, Math.min(5, products.length)));
             }
-            setIsLoadingClients(false);
-        }, 200);
-        return () => clearTimeout(h);
-    }, [searchQuery]);
+
+            // Inicializar produtos filtrados
+            setFilteredProducts(products);
+        }
+    }, [products]);
 
     const openAddItemDialog = () => {
         setTempItem({ itemId: null, sold: '', returned: '' });
@@ -277,7 +257,12 @@ export function RegisterSalePage() {
 
                 // Adicionar aos produtos recentes se não estiver lá
                 if (!recentlyUsedProducts.some(p => p.id === prod.id)) {
-                    setRecentlyUsedProducts(prev => [prod, ...prev.slice(0, 4)]);
+                    const newRecentProducts = [prod, ...recentlyUsedProducts.slice(0, 4)];
+                    setRecentlyUsedProducts(newRecentProducts);
+
+                    // Salvar IDs recentes no localStorage
+                    localStorage.setItem('recentProducts',
+                        JSON.stringify(newRecentProducts.map(p => p.id)));
                 }
             }
 
@@ -334,8 +319,7 @@ export function RegisterSalePage() {
             return;
         }
 
-        setIsSubmittingSale(true);
-        const saleData: CreateSaleDTO = {
+        const saleData = {
             clientId: selectedClient.id,
             paymentMethod: selectedPayment,
             items: orderItems.map(item => ({
@@ -348,158 +332,162 @@ export function RegisterSalePage() {
         };
 
         try {
-            const res = await createSale(saleData);
-            navigate(`/sale-finished/${res.saleId}`);
+            // Usar a mutação de React Query para criar a venda
+            const result = await createSaleMutation.mutateAsync(saleData);
+            navigate(`/sale-finished/${result.saleId}`);
         } catch (err) {
             console.error('Error al registrar venta:', err);
             toast.error('Error al registrar venta');
         } finally {
-            setIsSubmittingSale(false);
             setIsConfirmationDialogOpen(false);
         }
     };
+
+    // Verificar se está carregando produtos
+    const isLoading = isLoadingProducts;
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <div className="px-4 pb-20 max-w-2xl mx-auto w-full flex-1">
                 <Header
                     title="Registrar Venta"
-                    onBack={() => navigate('/')}
+                    onBack={() => navigate(-1)}
+                    hideAvatar
                 />
 
-                {isLoadingProducts ? (
+                {isLoading ? (
                     <RegisterSaleSkeleton />
                 ) : (
-                    <div className="space-y-4 mt-4">
-                        {/* Información principal */}
-                        <Card>
-                            <CardHeader className='-mb-4'>
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <CheckCircle className="h-5 w-5 text-primary" />
-                                    Cliente
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                {selectedClient ? (
-                                    <div className="flex items-center gap-2 bg-primary/10 border border-primary rounded-xl py-3 px-2">
-                                        <CheckCircle className="h-4 w-4 text-primary " />
-                                        <span className="font-medium">
-                                            {selectedClient.name}
-                                        </span>
-                                        {selectedClient.phone && (
-                                            <span className="text-sm text-gray-500 ml-1">
-                                                ({selectedClient.phone})
-                                            </span>
-                                        )}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="ml-auto text-red-600 hover:bg-red-50 p-1 h-auto"
-                                            onClick={() => setSelectedClient(null)}
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <ClientSearch
-                                            clients={clients}
-                                            selectedClient={undefined}
-                                            onSelect={setSelectedClient}
-                                            searchQuery={searchQuery}
-                                            setSearchQuery={setSearchQuery}
-                                            isLoading={isLoadingClients}
-                                        />
-                                        <div className="text-sm text-muted-foreground mt-2">
-                                            Introduzca el nombre del cliente para buscarlo
-                                        </div>
-                                    </>
-                                )}
-                            </CardContent>
-                        </Card>
+                    <div className="space-y-6 mt-4">
+                        {/* Sección Cliente - Simplificada sin Card */}
+                        <div className="pb-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <User className="h-5 w-5 text-primary" />
+                                <h2 className="font-medium text-lg">Cliente</h2>
+                            </div>
 
-                        <Card>
-                            <CardHeader className='-mb-4'>
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <Coins className="h-5 w-5 text-primary" />
-                                    Método de pago
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <RadioGroup
-                                    value={selectedPayment}
-                                    onValueChange={v => setSelectedPayment(v as any)}
-                                    className="flex flex-col sm:flex-row gap-2"
-                                >
-                                    {[
-                                        { value: 'CASH', label: 'Efectivo', icon: MoneySVG },
-                                        { value: 'YAPE', label: 'Yape', icon: SmartPhoneSVG }
-                                    ].map(method => (
-                                        <label
-                                            key={method.value}
-                                            htmlFor={method.value}
-                                            className={`flex items-center space-x-3 border p-3 rounded-xl cursor-pointer flex-1 transition-all ${selectedPayment === method.value
-                                                ? 'border-primary bg-primary/5'
-                                                : 'hover:bg-gray-50'
+                            {selectedClient ? (
+                                <div className="flex items-center gap-2 bg-primary/10 border border-primary rounded-xl py-3 px-3">
+                                    <CheckCircle className="h-4 w-4 text-primary" />
+                                    <span className="font-medium">
+                                        {selectedClient.name}
+                                    </span>
+                                    {selectedClient.phone && (
+                                        <span className="text-sm text-gray-500 ml-1">
+                                            ({selectedClient.phone})
+                                        </span>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="ml-auto text-red-600 hover:bg-red-50 p-1 h-auto"
+                                        onClick={() => setSelectedClient(null)}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ) : (
+                                <>
+                                    <ClientSearch
+                                        clients={clients}
+                                        selectedClient={undefined}
+                                        onSelect={setSelectedClient}
+                                        searchQuery={searchQuery}
+                                        setSearchQuery={setSearchQuery}
+                                        isLoading={isLoadingClients}
+                                    />
+                                    <div className="text-sm text-muted-foreground mt-2">
+                                        Introduzca el nombre del cliente para buscarlo
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <Separator />
+
+                        {/* Método de Pago - Simplificado sin Card */}
+                        <div className="pb-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Coins className="h-5 w-5 text-primary" />
+                                <h2 className="font-medium text-lg">Método de pago</h2>
+                            </div>
+
+                            <RadioGroup
+                                value={selectedPayment}
+                                onValueChange={v => setSelectedPayment(v as any)}
+                                className="flex gap-3"
+                            >
+                                {[
+                                    { value: 'CASH', label: 'Efectivo', icon: MoneySVG },
+                                    { value: 'YAPE', label: 'Yape', icon: SmartPhoneSVG }
+                                ].map(method => (
+                                    <label
+                                        key={method.value}
+                                        htmlFor={method.value}
+                                        className={`flex items-center space-x-3 border p-3 rounded-xl cursor-pointer flex-1 transition-all ${selectedPayment === method.value
+                                            ? 'border-primary bg-primary/5'
+                                            : 'hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        <RadioGroupItem value={method.value} id={method.value} className="sr-only" />
+                                        <div
+                                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === method.value
+                                                ? 'border-primary bg-primary'
+                                                : 'border-gray-300'
                                                 }`}
                                         >
-                                            <RadioGroupItem value={method.value} id={method.value} className="sr-only" />
-                                            <div
-                                                className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPayment === method.value
-                                                    ? 'border-primary bg-primary'
-                                                    : 'border-gray-300'
-                                                    }`}
-                                            >
-                                                {selectedPayment === method.value && (
-                                                    <div className="w-2 h-2 rounded-full bg-white" />
-                                                )}
-                                            </div>
-                                            <img
-                                                src={method.icon}
-                                                alt={method.value}
-                                                className="h-5 w-5"
-                                            />
-                                            <span className="font-medium">{method.label}</span>
-                                        </label>
-                                    ))}
-                                </RadioGroup>
-                            </CardContent>
-                        </Card>
+                                            {selectedPayment === method.value && (
+                                                <div className="w-2 h-2 rounded-full bg-white" />
+                                            )}
+                                        </div>
+                                        <img
+                                            src={method.icon}
+                                            alt={method.value}
+                                            className="h-5 w-5"
+                                        />
+                                        <span className="font-medium">{method.label}</span>
+                                    </label>
+                                ))}
+                            </RadioGroup>
+                        </div>
 
-                        {/* Información de venta */}
-                        <Card>
-                            <CardHeader className="-mb-4 flex flex-row items-center justify-between">
-                                <CardTitle className="text-lg flex items-center gap-2">
+                        <Separator />
+
+                        {/* Ítems de la venta - Simplificado sin Card */}
+                        <div>
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
                                     <ShoppingCart className="h-5 w-5 text-primary" />
-                                    Ítems ({orderItems.length})
-                                </CardTitle>
+                                    <h2 className="font-medium text-lg">Ítems ({orderItems.length})</h2>
+                                </div>
                                 <Button size="sm" variant="default" onClick={openAddItemDialog}>
                                     <Plus className="w-4 h-4 mr-2" />
                                     Agregar ítem
                                 </Button>
-                            </CardHeader>
-                            <CardContent className="pt-2">
-                                {orderItems.length === 0 ? (
-                                    <div className="text-center py-10 border border-dashed border-gray-200 rounded-lg bg-gray-50">
-                                        <div className="flex flex-col items-center space-y-2">
-                                            <ShoppingCart className="h-12 w-12 text-gray-400" />
-                                            <div className="text-gray-500 font-medium">No hay ítems agregados</div>
-                                            <Button
-                                                variant="outline"
-                                                className="mt-2"
-                                                onClick={openAddItemDialog}
-                                            >
-                                                <Plus className="w-4 h-4 mr-2" />
-                                                Agregar el primer ítem
-                                            </Button>
-                                        </div>
+                            </div>
+
+                            {orderItems.length === 0 ? (
+                                <div className="text-center py-10 border border-dashed border-gray-200 rounded-xl bg-gray-50">
+                                    <div className="flex flex-col items-center space-y-2">
+                                        <ShoppingCart className="h-12 w-12 text-gray-400" />
+                                        <div className="text-gray-500 font-medium">No hay ítems agregados</div>
+                                        <Button
+                                            variant="outline"
+                                            className="mt-2"
+                                            onClick={openAddItemDialog}
+                                        >
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Agregar el primer ítem
+                                        </Button>
                                     </div>
-                                ) : (
-                                    <div className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+                                </div>
+                            ) : (
+                                <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200">
+                                    <div className="divide-y divide-gray-100">
                                         {orderItems.map((oi, idx) => (
                                             <div
                                                 key={idx}
-                                                className="py-3 px-4 hover:bg-gray-50 flex justify-between text-sm items-center"
+                                                className="py-3 px-4 hover:bg-gray-50 flex justify-between text-sm items-center cursor-pointer"
                                                 onClick={() => openEditItemDialog(idx)}
                                             >
                                                 <div className="flex-1">
@@ -565,33 +553,33 @@ export function RegisterSalePage() {
                                             </div>
                                         ))}
                                     </div>
-                                )}
+                                </div>
+                            )}
 
-                                {orderItems.length > 0 && (
-                                    <div className="mt-4 flex flex-col space-y-2">
-                                        <div className="flex justify-between items-center py-2 px-4 rounded-lg mt-2 font-bold">
-                                            <span>Total:</span>
-                                            <span className="text-xl text-gray-950">{formatCurrency(calculateTotal())}</span>
-                                        </div>
+                            {orderItems.length > 0 && (
+                                <div className="mt-4 bg-gray-50 border border-gray-200 p-3 rounded-xl">
+                                    <div className="flex justify-between items-center font-bold">
+                                        <span>Total:</span>
+                                        <span className="text-xl text-gray-950">{formatCurrency(calculateTotal())}</span>
                                     </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                </div>
+                            )}
+                        </div>
 
                         <Button
-                            className="w-full py-6 text-lg  transition-all"
+                            className="w-full py-6 text-lg transition-all mt-6"
                             onClick={() => setIsConfirmationDialogOpen(true)}
-                            disabled={isSubmittingSale || orderItems.length === 0 || !selectedClient}
+                            disabled={createSaleMutation.isPending || orderItems.length === 0 || !selectedClient}
                         >
-                            {isSubmittingSale ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : null}
+                            {createSaleMutation.isPending ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : null}
                             Registrar Venta
                         </Button>
                     </div>
                 )}
-            </div >
+            </div>
 
             {/* Dialog para agregar/editar artículo */}
-            < Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>
@@ -724,10 +712,10 @@ export function RegisterSalePage() {
                         </DialogFooter>
                     </div>
                 </DialogContent>
-            </Dialog >
+            </Dialog>
 
             {/* Dialog para seleccionar producto */}
-            < Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen} >
+            <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
                 <DialogContent className="max-w-md p-0">
                     <div className="p-4 pb-0">
                         <DialogTitle className="text-lg font-semibold mb-2">Seleccionar producto</DialogTitle>
@@ -782,10 +770,10 @@ export function RegisterSalePage() {
                         </Button>
                     </div>
                 </DialogContent>
-            </Dialog >
+            </Dialog>
 
             {/* Dialog de confirmación de venta */}
-            < Dialog open={isConfirmationDialogOpen} onOpenChange={setIsConfirmationDialogOpen} >
+            <Dialog open={isConfirmationDialogOpen} onOpenChange={setIsConfirmationDialogOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Confirmar venta</DialogTitle>
@@ -828,10 +816,10 @@ export function RegisterSalePage() {
                         </Button>
                         <Button
                             onClick={handleSubmitSale}
-                            disabled={isSubmittingSale}
+                            disabled={createSaleMutation.isPending}
                             className="min-w-28"
                         >
-                            {isSubmittingSale ? (
+                            {createSaleMutation.isPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 'Confirmar'
@@ -839,7 +827,7 @@ export function RegisterSalePage() {
                         </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog >
-        </div >
+            </Dialog>
+        </div>
     );
 }

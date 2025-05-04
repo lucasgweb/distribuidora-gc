@@ -121,7 +121,7 @@ export function InventoryMovementPage() {
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <div className="px-6 pb-10 max-w-md mx-auto w-full flex-1">
-                <Header title="Movimiento de inventario" onBack={() => navigate(-1)} />
+                <Header title="Movimiento de inventario" onBack={() => navigate(-1)} hideAvatar />
 
                 <div className="mt-6 space-y-4">
                     <div className="space-y-3">

@@ -1,36 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { CheckCircle2, Plus, Search, Cylinder, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
-import { listProducts } from '../services/products.service';
 import { Skeleton } from '../components/ui/skeleton';
-import { ProductDTO } from '../dtos/product.dto';
 import { BottomNav } from '../components/bottom-nav';
+import { useListProducts } from '../queries/products'; // Importar o hook do React Query
 
 export function ProductListPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
-    const [products, setProducts] = useState<ProductDTO[]>([]);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        async function fetchProducts() {
-            try {
-                const data = await listProducts();
-                setProducts(data.products);
-            } catch (error) {
-                console.error('Error al buscar productos:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
+    // Usar o hook do React Query para buscar produtos
+    const { data, isLoading, error } = useListProducts();
 
-        fetchProducts();
-    }, []);
+    // Array de produtos ou array vazio se data for undefined
+    const products = data?.products || [];
 
+    // Filtrar produtos com base na busca
     const filtered = products.filter(product =>
         product.name.toLowerCase().includes(search.toLowerCase())
     );
@@ -48,7 +37,7 @@ export function ProductListPage() {
         <>
             <div className="flex flex-col px-4 max-w-6xl mx-auto min-h-screen bg-white">
                 <Header title="Productos" showMenu />
-                <div className="pt-4   mx-auto w-full pb-24">
+                <div className="pt-4 mx-auto w-full pb-24">
                     <div className="flex items-center w-full justify-between gap-2">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -66,7 +55,15 @@ export function ProductListPage() {
                     </div>
 
                     <div className="mt-4 space-y-2">
-                        {loading ? (
+                        {/* Estado de erro */}
+                        {error && (
+                            <div className="text-center py-6 bg-red-50 rounded-lg">
+                                <p className="text-red-500">Error al cargar productos. Por favor, intente de nuevo.</p>
+                            </div>
+                        )}
+
+                        {/* Estado de carregamento */}
+                        {isLoading ? (
                             <>
                                 <Skeleton className="w-full h-32 rounded-lg" />
                                 <Skeleton className="w-full h-32 rounded-lg" />

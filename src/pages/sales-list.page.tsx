@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Loader2, CreditCard } from 'lucide-react';
-import { listSales } from '../services/sales.service';
 import { SaleDTO } from '../dtos/sale.dto';
 import { BottomNav } from '../components/bottom-nav';
 import { SaleCard } from '../components/sale-card';
 import { Skeleton } from '../components/ui/skeleton';
 import { useDebounce } from 'use-debounce';
+import { useListSales } from '../queries/sales';
 
 const PAGE_SIZE = 10;
 
@@ -44,59 +44,62 @@ export function SalesListPage() {
     const [sales, setSales] = useState<SaleDTO[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const [initialLoadDone, setInitialLoadDone] = useState(false);
 
+    // Referências para usar em efeitos e callbacks
     const currentPageRef = useRef(page);
     const observerRef = useRef<HTMLDivElement | null>(null);
-    const loadingRef = useRef(loading);
     const hasMoreRef = useRef(hasMore);
     const initialLoadDoneRef = useRef(initialLoadDone);
 
+    // Obter dados usando React Query
+    const {
+        data: salesData,
+        isLoading,
+        isFetching,
+        isError,
+        error
+    } = useListSales({
+        query: debouncedSearch || undefined,
+        page,
+        pageSize: PAGE_SIZE
+    });
+
+    // Atualizar as referências quando os estados mudam
     useEffect(() => {
-        loadingRef.current = loading;
-        hasMoreRef.current = hasMore;
         currentPageRef.current = page;
+        hasMoreRef.current = hasMore;
         initialLoadDoneRef.current = initialLoadDone;
-    }, [loading, hasMore, page, initialLoadDone]);
+    }, [page, hasMore, initialLoadDone]);
 
-    const loadSales = useCallback(async (forceReset = false) => {
-        if (loadingRef.current || (!forceReset && !hasMoreRef.current)) return;
-
-        setLoading(true);
-        try {
-            const currentPage = forceReset ? 1 : currentPageRef.current;
-
-            const data = await listSales({
-                query: debouncedSearch || undefined,
-                page: currentPage,
-                pageSize: PAGE_SIZE,
-            });
-
+    // Processar dados quando recebidos do React Query
+    useEffect(() => {
+        if (salesData) {
+            // Atualizar vendas
             setSales(prev => {
-                const existingIds = new Set(prev.map(s => s.id));
-                const newSales = data.sales.filter(s => !existingIds.has(s.id));
-                return forceReset ? newSales : [...prev, ...newSales];
+                if (page === 1) {
+                    return salesData.sales;
+                } else {
+                    const existingIds = new Set(prev.map(s => s.id));
+                    const newSales = salesData.sales.filter(s => !existingIds.has(s.id));
+                    return [...prev, ...newSales];
+                }
             });
 
-            const totalPages = Math.ceil(data.total / PAGE_SIZE);
-            setHasMore(currentPage < totalPages);
+            // Verificar se há mais páginas
+            const totalPages = Math.ceil(salesData.total / PAGE_SIZE);
+            setHasMore(page < totalPages);
 
-            if (!initialLoadDoneRef.current) {
+            // Marcar carregamento inicial como concluído
+            if (!initialLoadDone) {
                 setInitialLoadDone(true);
             }
-
-        } catch (error) {
-            console.error('Error al cargar ventas:', error);
-        } finally {
-            setLoading(false);
         }
-    }, [debouncedSearch]);
+    }, [salesData, page, initialLoadDone]);
 
-    // Carregamento inicial ou quando a busca mudar
+    // Resetar quando a busca mudar
     useEffect(() => {
-        const controller = new AbortController();
         setIsSearching(true);
 
         const timer = setTimeout(() => {
@@ -105,29 +108,22 @@ export function SalesListPage() {
             currentPageRef.current = 1;
             setHasMore(true);
             setInitialLoadDone(false);
-            loadSales(true).finally(() => setIsSearching(false));
-        }, 150);
+            setIsSearching(false);
+        }, 300);
 
-        return () => {
-            controller.abort();
-            clearTimeout(timer);
-        };
-    }, [debouncedSearch, loadSales]);
+        return () => clearTimeout(timer);
+    }, [debouncedSearch]);
 
-    // Carregamento quando a página mudar (scroll infinito)
-    useEffect(() => {
-        if (page === 1) return;
-        loadSales();
-    }, [page, loadSales]);
-
-    // Configuração do observador de interseção para o scroll infinito
+    // Configurar o observador de interseção para paginação infinita
     useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
-                if (entries[0].isIntersecting &&
+                if (
+                    entries[0].isIntersecting &&
                     hasMoreRef.current &&
-                    !loadingRef.current &&
-                    initialLoadDoneRef.current) {
+                    !isFetching &&
+                    initialLoadDoneRef.current
+                ) {
                     setPage(prev => prev + 1);
                 }
             },
@@ -140,7 +136,7 @@ export function SalesListPage() {
         return () => {
             if (currentObserver) observer.unobserve(currentObserver);
         };
-    }, []);
+    }, [isFetching]);
 
     // Función para renderizar los skeletons
     const renderSaleSkeletons = (count = 5) => {
@@ -167,35 +163,46 @@ export function SalesListPage() {
                     </div>
 
                     <div className="mt-4 space-y-3">
-                        {/* Mostrar skeletons durante la búsqueda */}
+                        {/* Exibir mensagem de erro */}
+                        {isError && (
+                            <div className="bg-red-50 text-red-700 p-4 rounded-lg border border-red-200">
+                                <p className="font-medium">Error al cargar las ventas</p>
+                                <p className="text-sm mt-1">{error?.message || 'Ha ocurrido un error inesperado'}</p>
+                            </div>
+                        )}
+
+                        {/* Mostrar skeletons durante a busca */}
                         {isSearching && sales.length === 0 && renderSaleSkeletons(3)}
 
-                        {/* Mostrar skeletons durante la carga inicial */}
-                        {loading && page === 1 && !isSearching && renderSaleSkeletons(5)}
+                        {/* Mostrar skeletons durante o carregamento inicial */}
+                        {isLoading && page === 1 && !isSearching && renderSaleSkeletons(5)}
 
-                        {/* Mostrar ventas cuando están cargadas */}
+                        {/* Mostrar vendas quando estiverem carregadas */}
                         {sales.map(sale => (
                             <SaleCard sale={sale} key={sale.id} />
                         ))}
 
-                        {/* Indicador de carga para paginación */}
-                        {loading && page > 1 && (
+                        {/* Indicador de carregamento para paginação */}
+                        {isFetching && page > 1 && (
                             <div className="flex flex-col items-center py-4">
                                 <Loader2 className="h-6 w-6 animate-spin text-primary mb-2" />
                                 <span className="text-sm text-gray-600">Cargando más ventas...</span>
                             </div>
                         )}
 
+                        {/* Elemento de referência para observar o scroll */}
                         <div ref={observerRef} className="h-2" />
 
+                        {/* Mensagem de fim da lista */}
                         {!hasMore && sales.length > 0 && (
                             <div className="text-center py-4 text-gray-500">
                                 <p>Has llegado al final de la lista</p>
-                                <p className="text-sm mt-1">Mostrando {sales.length} de {sales.length} resultados</p>
+                                <p className="text-sm mt-1">Mostrando {sales.length} de {salesData?.total || sales.length} resultados</p>
                             </div>
                         )}
 
-                        {!loading && !isSearching && sales.length === 0 && (
+                        {/* Mensagem quando não há vendas */}
+                        {!isLoading && !isSearching && sales.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <div className="bg-gray-100 rounded-full p-4 mb-3">
                                     <CreditCard className="h-8 w-8 text-gray-400" />

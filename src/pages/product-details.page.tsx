@@ -117,7 +117,8 @@ export function ProductDetailsPage() {
         <div className="flex px-6 flex-col min-h-screen">
             <Header
                 title={isNew ? 'Nuevo Producto' : 'Editar Producto'}
-                onBack={() => navigate('/products')}
+                onBack={() => navigate(-1)}
+                hideAvatar
             />
 
             <div className="pt-4 pb-4 max-w-2xl mx-auto w-full">

@@ -1,15 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
 import { ArrowDownCircle, ArrowUpCircle, Plus, Search } from 'lucide-react';
-import { api } from '../lib/api';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BottomNav } from '../components/bottom-nav';
+import { useDebounce } from 'use-debounce';
+import { useInventoryMovements } from '../queries/inventory';
 
 interface InventoryMovement {
     id: string;
@@ -29,12 +30,6 @@ interface InventoryMovement {
         id: string;
         name: string;
     };
-}
-
-interface PaginationState {
-    page: number;
-    hasMore: boolean;
-    isLoading: boolean;
 }
 
 // Componente para el skeleton de un movimiento de inventario
@@ -70,93 +65,51 @@ const InventoryMovementSkeleton = () => {
 export function InventoryListPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [movements, setMovements] = useState<InventoryMovement[]>([]);
-    const [pagination, setPagination] = useState<PaginationState>({
-        page: 1,
-        hasMore: true,
-        isLoading: false,
-    });
-    const observer = useRef<IntersectionObserver | null>(null);
+    const [debouncedSearch] = useDebounce(search, 500);
+
+    // Referência para o último item da lista (para o Intersection Observer)
     const lastMovementElementRef = useRef<HTMLDivElement | null>(null);
 
-    // Debounce search input
+    // Usando o hook de query para buscar os movimentos de inventário
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        isError
+    } = useInventoryMovements({
+        search: debouncedSearch,
+        pageSize: 10
+    });
+
+    // Juntar todos os movimentos de todas as páginas em um único array
+    const movements: InventoryMovement[] = data
+        ? data.pages.flatMap(page => page.inventoryMovements)
+        : [];
+
+    // Configurar o Intersection Observer manualmente
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            setDebouncedSearch(search);
-            // Reset pagination when search changes
-            setPagination({
-                page: 1,
-                hasMore: true,
-                isLoading: false,
-            });
-            setMovements([]);
-        }, 500);
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            { threshold: 0.5, rootMargin: '100px' }
+        );
 
-        return () => clearTimeout(timeoutId);
-    }, [search]);
-
-    const fetchMovements = useCallback(async (page: number, searchTerm: string) => {
-        try {
-            setPagination(prev => ({ ...prev, isLoading: true }));
-
-            const response = await api.get('/inventory-movements', {
-                params: {
-                    page,
-                    pageSize: 10,
-                    search: searchTerm || undefined,
-                },
-            });
-
-            const { inventoryMovements, total } = response.data;
-
-            setMovements(prev =>
-                page === 1 ? inventoryMovements : [...prev, ...inventoryMovements]
-            );
-
-            // Check if there are more items to load
-            const hasMore = page * 10 < total;
-
-            setPagination({
-                page,
-                hasMore,
-                isLoading: false,
-            });
-        } catch (error) {
-            console.error('Error fetching inventory movements:', error);
-            toast.error('No se pudieron cargar los movimientos de inventario');
-            setPagination(prev => ({ ...prev, isLoading: false }));
-        }
-    }, []);
-
-    // Initial load and when search changes
-    useEffect(() => {
-        fetchMovements(1, debouncedSearch);
-    }, [fetchMovements, debouncedSearch]);
-
-    // Setup intersection observer for infinite scrolling
-    useEffect(() => {
-        if (pagination.isLoading || !pagination.hasMore) return;
-
-        if (observer.current) observer.current.disconnect();
-
-        observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && pagination.hasMore) {
-                const nextPage = pagination.page + 1;
-                fetchMovements(nextPage, debouncedSearch);
-            }
-        });
-
-        if (lastMovementElementRef.current) {
-            observer.current.observe(lastMovementElementRef.current);
+        const currentElement = lastMovementElementRef.current;
+        if (currentElement) {
+            observer.observe(currentElement);
         }
 
         return () => {
-            if (observer.current) {
-                observer.current.disconnect();
+            if (currentElement) {
+                observer.unobserve(currentElement);
             }
         };
-    }, [pagination.isLoading, pagination.hasMore, pagination.page, fetchMovements, debouncedSearch]);
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const getMovementTypeText = (type: 'ENTRY' | 'EXIT') => {
         return type === 'ENTRY' ? 'Entrada' : 'Salida';
@@ -170,7 +123,7 @@ export function InventoryListPage() {
         return format(new Date(dateString), 'dd MMM yyyy, HH:mm', { locale: es });
     };
 
-    // Renderizar los skeletons con variedad
+    // Renderizar os skeletons com variedade
     const renderSkeletons = () => {
         return Array(5)
             .fill(0)
@@ -178,6 +131,11 @@ export function InventoryListPage() {
                 <InventoryMovementSkeleton key={`skeleton-${index}`} />
             ));
     };
+
+    // Mostrar mensagem de erro se ocorrer
+    if (isError) {
+        toast.error('No se pudieron cargar los movimientos de inventario');
+    }
 
     return (
         <>
@@ -207,75 +165,92 @@ export function InventoryListPage() {
                     </div>
 
                     <div className="space-y-3">
-                        {movements.length === 0 && !pagination.isLoading ? (
+                        {isLoading ? (
+                            // Mostrar skeletons durante o carregamento inicial
+                            renderSkeletons()
+                        ) : movements.length === 0 ? (
+                            // Mostrar mensagem quando não há movimentos
                             <div className="bg-white p-6 rounded-xl shadow text-center">
                                 <p className="text-gray-500">No hay movimientos de inventario.</p>
                             </div>
                         ) : (
-                            movements.map((movement, index) => {
-                                const isLastElement = index === movements.length - 1;
-                                const isEntry = movement.movementType === 'ENTRY';
-                                const isFull = movement.cylinderType === 'FULL';
+                            // Renderizar a lista de movimentos
+                            <>
+                                {movements.map((movement, index) => {
+                                    const isEntry = movement.movementType === 'ENTRY';
+                                    const isFull = movement.cylinderType === 'FULL';
+                                    const isLastElement = index === movements.length - 1;
 
-                                return (
-                                    <div
-                                        key={movement.id}
-                                        ref={isLastElement ? lastMovementElementRef : null}
-                                        className={`
-                                        border p-4 rounded-xl 
-                                    `}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    {isEntry ? (
-                                                        <ArrowDownCircle className="text-green-500" size={18} />
-                                                    ) : (
-                                                        <ArrowUpCircle className="text-red-500" size={18} />
-                                                    )}
-                                                    <p className="font-medium">{movement.product.name}</p>
+                                    return (
+                                        <div
+                                            key={movement.id}
+                                            ref={isLastElement ? lastMovementElementRef : null}
+                                            className="border p-4 rounded-xl"
+                                        >
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        {isEntry ? (
+                                                            <ArrowDownCircle className="text-green-500" size={18} />
+                                                        ) : (
+                                                            <ArrowUpCircle className="text-red-500" size={18} />
+                                                        )}
+                                                        <p className="font-medium">{movement.product.name}</p>
+                                                    </div>
+                                                    <p className="text-sm text-gray-500 mt-1">
+                                                        {formatDateTime(movement.createdAt)} • {movement.user.name}
+                                                    </p>
                                                 </div>
-                                                <p className="text-sm text-gray-500 mt-1">
-                                                    {formatDateTime(movement.createdAt)} • {movement.user.name}
-                                                </p>
+                                                <div className={`
+                                                    text-sm font-medium px-2 py-1 rounded-md
+                                                    ${isEntry
+                                                        ? 'bg-green-50 text-green-700'
+                                                        : 'bg-red-50 text-red-700'
+                                                    }
+                                                `}>
+                                                    {getMovementTypeText(movement.movementType)}
+                                                </div>
                                             </div>
-                                            <div className={`
-                                            text-sm font-medium px-2 py-1 rounded-md
-                                            ${isEntry
-                                                    ? 'bg-green-50 text-green-700'
-                                                    : 'bg-red-50 text-red-700'
-                                                }
-                                        `}>
-                                                {getMovementTypeText(movement.movementType)}
-                                            </div>
-                                        </div>
 
-                                        <div className="mt-3 flex items-center">
-                                            <div className={`
-                                            inline-flex items-center px-2 py-1 rounded-full text-xs
-                                            ${isFull
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
-                                                }
-                                        `}>
-                                                Cilindro {getCylinderTypeText(movement.cylinderType)}
+                                            <div className="mt-3 flex items-center">
+                                                <div className={`
+                                                    inline-flex items-center px-2 py-1 rounded-full text-xs
+                                                    ${isFull
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                                    }
+                                                `}>
+                                                    Cilindro {getCylinderTypeText(movement.cylinderType)}
+                                                </div>
+                                                <div className="ml-2 px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">
+                                                    {movement.quantity} unidades
+                                                </div>
                                             </div>
-                                            <div className="ml-2 px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">
-                                                {movement.quantity} unidades
-                                            </div>
-                                        </div>
 
-                                        {movement.notes && (
-                                            <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md">
-                                                "{movement.notes}"
-                                            </div>
-                                        )}
+                                            {movement.notes && (
+                                                <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md">
+                                                    "{movement.notes}"
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+
+                                {/* Indicador de carregamento ao buscar mais dados */}
+                                {isFetchingNextPage && (
+                                    <div className="flex justify-center py-4">
+                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                                     </div>
-                                );
-                            })
-                        )}
+                                )}
 
-                        {pagination.isLoading && renderSkeletons()}
+                                {/* Mensagem quando não há mais páginas */}
+                                {!hasNextPage && movements.length > 0 && (
+                                    <div className="text-center py-4 text-sm text-gray-500">
+                                        No hay más movimientos de inventario para mostrar.
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
