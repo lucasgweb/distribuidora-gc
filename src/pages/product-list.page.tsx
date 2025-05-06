@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { CheckCircle2, Plus, Search, Cylinder, ChevronRight } from 'lucide-react';
+import { CheckCircle2, Plus, Search, Cylinder, ArrowLeftRight, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 import { BottomNav } from '../components/bottom-nav';
-import { useListProducts } from '../queries/products'; // Importar o hook do React Query
+import { useListProducts } from '../queries/products';
+import { formatCurrency } from '../utils/format-currency';
 
 export function ProductListPage() {
     const navigate = useNavigate();
@@ -24,14 +25,7 @@ export function ProductListPage() {
         product.name.toLowerCase().includes(search.toLowerCase())
     );
 
-    const formatCurrency = (value: number) => {
-        return value.toLocaleString('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).replace('PEN', 'S/');
-    };
+
 
     return (
         <>
@@ -62,14 +56,47 @@ export function ProductListPage() {
                             </div>
                         )}
 
-                        {/* Estado de carregamento */}
+                        {/* Estado de carregamento - Skeleton melhorado */}
                         {isLoading ? (
                             <>
-                                <Skeleton className="w-full h-32 rounded-lg" />
-                                <Skeleton className="w-full h-32 rounded-lg" />
-                                <Skeleton className="w-full h-32 rounded-lg" />
-                                <Skeleton className="w-full h-32 rounded-lg" />
-                                <Skeleton className="w-full h-32 rounded-lg" />
+                                {[1, 2, 3, 4].map((item) => (
+                                    <Card key={item} className="overflow-hidden border-gray-200">
+                                        <CardContent className="p-4">
+                                            {/* Header and title */}
+                                            <div className="flex justify-between items-center mb-2">
+                                                <Skeleton className="h-5 w-2/3" />
+                                                <Skeleton className="h-4 w-4 rounded-full" />
+                                            </div>
+
+                                            {/* Price information */}
+                                            <div className="flex justify-between mt-2">
+                                                <div className="space-y-1">
+                                                    <Skeleton className="h-4 w-20" />
+                                                    <Skeleton className="h-4 w-24" />
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <Skeleton className="h-5 w-12 rounded-md" />
+                                                    <Skeleton className="h-5 w-12 rounded-md" />
+                                                </div>
+                                            </div>
+
+                                            {/* Inventory section */}
+                                            <div className="mt-3 pt-2 border-t border-gray-100 flex justify-between">
+                                                <div className="flex gap-3">
+                                                    <div className="flex items-center">
+                                                        <Skeleton className="h-4 w-4 mr-1 rounded-full" />
+                                                        <Skeleton className="h-4 w-16" />
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <Skeleton className="h-4 w-4 mr-1 rounded-full" />
+                                                        <Skeleton className="h-4 w-16" />
+                                                    </div>
+                                                </div>
+                                                <Skeleton className="h-6 w-24 rounded-md" />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
                             </>
                         ) : filtered.length === 0 ? (
                             <div className="text-center py-6 bg-gray-50 rounded-lg">
@@ -87,7 +114,7 @@ export function ProductListPage() {
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
                                                     <h3 className="font-semibold text-base text-gray-800">{product.name}</h3>
-                                                    <ChevronRight size={18} className="text-primary-400" />
+                                                    <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-700 transition-colors" />
                                                 </div>
 
                                                 <div className="flex items-center gap-2 mt-1 text-sm">
@@ -136,16 +163,18 @@ export function ProductListPage() {
                                                 </div>
                                             </div>
 
+                                            {/* Botão de inventário melhorado */}
                                             <Button
-                                                variant="ghost"
+                                                variant="outline"
                                                 size="sm"
-                                                className="h-6 text-xs text-primary hover:bg-primary-50 px-2 py-0"
+                                                className="h-7 text-xs text-primary border-primary  hover:bg-primary-50 px-2 py-0 flex items-center gap-1"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/inventory-movement?productId=${product.id}`);
                                                 }}
                                             >
-                                                Movimiento
+                                                <ArrowLeftRight size={14} />
+                                                <span>Inventario</span>
                                             </Button>
                                         </div>
                                     </CardContent>

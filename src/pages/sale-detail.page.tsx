@@ -257,6 +257,7 @@ export function SaleDetail() {
                 <Header
                     title="Comprobante de Venta"
                     onBack={() => navigate(-1)}
+                    hideAvatar
                 />
             </div>
             <div className="max-w-4xl mx-auto w-full flex-1  print:px-0">

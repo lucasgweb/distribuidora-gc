@@ -136,6 +136,7 @@ export function ClientListPage() {
                                                 <h3 className="font-medium text-lg text-gray-900">
                                                     {client.name}
                                                 </h3>
+
                                             </div>
                                             <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                                                 <div className="flex items-center gap-2 text-gray-600">

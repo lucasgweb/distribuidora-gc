@@ -1,9 +1,7 @@
 // src/queries/products.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { 
-  CreateProductDTO,
   ProductDTO, 
-  UpdateProductDTO 
 } from '../dtos/product.dto'
 import { 
   createProduct, 
@@ -43,29 +41,28 @@ export function useProduct(id: string, options = {}) {
   })
 }
 
-// Hook para criar um produto
+// Hook para criar um produto - ajustado para void
 export function useCreateProduct() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: (data: CreateProductDTO) => createProduct(data),
+    mutationFn: createProduct,
     onSuccess: () => {
-      // Quando criar com sucesso, invalidar as listas de produtos
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+      // Limpar todo o cache de produtos para garantir dados atualizados
+      queryClient.invalidateQueries({ queryKey: productKeys.all })
     }
   })
 }
 
-// Hook para atualizar um produto
+// Hook para atualizar um produto - ajustado para void
 export function useUpdateProduct() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: (data: UpdateProductDTO) => updateProduct(data),
-    onSuccess: (data, variables) => {
-      // Atualizar o cache e invalidar as queries relevantes
-      queryClient.setQueryData(productKeys.detail(variables.id), data)
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+    mutationFn: updateProduct,
+    onSuccess: () => {
+      // Limpar todo o cache de produtos para garantir dados atualizados
+      queryClient.invalidateQueries({ queryKey: productKeys.all })
     }
   })
 }

@@ -96,8 +96,8 @@ export function InventoryMovementPage() {
         try {
             await api.post('/inventory-movements', {
                 productId: selectedProductId,
-                movementType, // 'ENTRY' or 'EXIT'
-                cylinderType, // 'FULL' or 'EMPTY'
+                movementType,
+                cylinderType, 
                 quantity: parseInt(quantity),
                 notes: notes.trim() || undefined,
             });

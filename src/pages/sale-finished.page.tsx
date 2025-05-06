@@ -159,6 +159,7 @@ export function SaleFinished() {
                 <Header
                     title="Comprobante de venta"
                     onBack={() => navigate(-1)}
+                    hideAvatar
                 />
 
                 {/* Card: Información general de la venta */}

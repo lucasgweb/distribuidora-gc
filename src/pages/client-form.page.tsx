@@ -76,23 +76,6 @@ function formatPhoneNumber(value: string): string {
     return formatted;
 }
 
-function isValidDNI(dni: string): boolean {
-    return /^\d{8}$/.test(dni);
-}
-
-function isValidRUC(ruc: string): boolean {
-    // 1) Tem que ser exatamente 11 dígitos
-    if (!/^\d{11}$/.test(ruc)) {
-        return false;
-    }
-
-    return true
-
-}
-
-function isValidDNIorRUC(value: string): boolean {
-    return isValidDNI(value) || isValidRUC(value);
-}
 
 export function ClientFormPage() {
     const { id } = useParams();
@@ -133,13 +116,7 @@ export function ClientFormPage() {
     }, [clientData]);
 
     const validateForm = (): boolean => {
-        const newErrors: Record<string, string> = {};
-
-        if (client.document) {
-            if (!isValidDNIorRUC(client.document)) {
-                newErrors.dni = 'Ingrese un DNI válido (8 dígitos) o RUC válido (11 dígitos)';
-            }
-        }
+        const newErrors: Record<string, string> = {}
 
         const phoneDigits = client.phone.replace(/\D/g, '');
         if (phoneDigits.length > 0) {
@@ -171,6 +148,7 @@ export function ClientFormPage() {
             const clientData = {
                 ...client,
                 phone: cleanedPhone,
+                email: client.email === '' ? null : client.email
             };
 
             if (isNewClient) {
@@ -195,9 +173,6 @@ export function ClientFormPage() {
     const handleDNIChange = (value: string) => {
         const onlyNums = value.replace(/\D/g, '');
         setClient({ ...client, document: onlyNums });
-        if (isValidDNIorRUC(onlyNums)) {
-            setErrors({ ...errors, dni: '' });
-        }
     };
 
     const handlePhoneChange = (value: string) => {
