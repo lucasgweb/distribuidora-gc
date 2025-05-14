@@ -1,4 +1,3 @@
-// src/queries/products.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { 
   ProductDTO, 
@@ -12,7 +11,6 @@ import {
   updateProduct 
 } from '../services/products.service'
 
-// Keys para as queries de produtos
 export const productKeys = {
   all: ['products'] as const,
   lists: () => [...productKeys.all, 'list'] as const,
@@ -21,34 +19,30 @@ export const productKeys = {
   detail: (id: string) => [...productKeys.details(), id] as const,
 }
 
-// Hook para buscar a lista de produtos
 export function useListProducts(params: ListProductsParams = {}) {
   return useQuery<ListProductsResponse>({
     queryKey: productKeys.list(params),
     queryFn: () => listProducts(params),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5, 
   })
 }
 
-// Hook para buscar um produto específico
 export function useProduct(id: string, options = {}) {
   return useQuery<ProductDTO>({
     queryKey: productKeys.detail(id),
     queryFn: () => getProduct(id),
-    staleTime: 1000 * 60 * 10, // 10 minutos
+    staleTime: 1000 * 60 * 10, 
     enabled: !!id && id !== 'new',
     ...options
   })
 }
 
-// Hook para criar um produto - ajustado para void
 export function useCreateProduct() {
   const queryClient = useQueryClient()
   
   return useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
-      // Limpar todo o cache de produtos para garantir dados atualizados
       queryClient.invalidateQueries({ queryKey: productKeys.all })
     }
   })

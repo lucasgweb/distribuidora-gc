@@ -32,7 +32,6 @@ interface InventoryMovement {
     };
 }
 
-// Componente para el skeleton de un movimiento de inventario
 const InventoryMovementSkeleton = () => {
     return (
         <div className="border p-4 rounded-xl animate-pulse">
@@ -52,7 +51,6 @@ const InventoryMovementSkeleton = () => {
                 <Skeleton className="h-[22px] w-20 rounded-full ml-2" />
             </div>
 
-            {/* Simular notas en aproximadamente 30% de los casos */}
             {Math.random() > 0.7 && (
                 <div className="mt-2">
                     <Skeleton className="h-10 w-full rounded-md" />
@@ -67,10 +65,8 @@ export function InventoryListPage() {
     const [search, setSearch] = useState('');
     const [debouncedSearch] = useDebounce(search, 500);
 
-    // Referência para o último item da lista (para o Intersection Observer)
     const lastMovementElementRef = useRef<HTMLDivElement | null>(null);
 
-    // Usando o hook de query para buscar os movimentos de inventário
     const {
         data,
         fetchNextPage,
@@ -83,12 +79,10 @@ export function InventoryListPage() {
         pageSize: 10
     });
 
-    // Juntar todos os movimentos de todas as páginas em um único array
     const movements: InventoryMovement[] = data
         ? data.pages.flatMap(page => page.inventoryMovements)
         : [];
 
-    // Configurar o Intersection Observer manualmente
     useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
@@ -123,7 +117,6 @@ export function InventoryListPage() {
         return format(new Date(dateString), 'dd MMM yyyy, HH:mm', { locale: es });
     };
 
-    // Renderizar os skeletons com variedade
     const renderSkeletons = () => {
         return Array(5)
             .fill(0)

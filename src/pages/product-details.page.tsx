@@ -6,14 +6,13 @@ import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import {
-    createProduct,
     getProduct,
-    updateProduct,
 } from '../services/products.service';
 import { FullScreenLoader } from '../components/full-screen-loader';
 import { Loader2 } from 'lucide-react';
 import { MoneyInput } from '../components/ui/money-input';
 import { useAuth } from '../hooks/use-auth.hook';
+import { useCreateProduct, useUpdateProduct } from '../queries/products';
 
 type EditableProduct = {
     name: string;
@@ -41,7 +40,6 @@ export function ProductDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [isSavingProduct, setIsSavingProduct] = useState(false);
 
-    // Cargar datos si estamos editando
     useEffect(() => {
         if (!isNew && id) {
             (async () => {
@@ -65,7 +63,6 @@ export function ProductDetailsPage() {
         }
     }, [id, isNew]);
 
-    // Handlers para los MoneyInput
     const handleBasePriceChange = (value: number) => {
         setProduct(prev => ({ ...prev, basePrice: value }));
     };
@@ -74,12 +71,14 @@ export function ProductDetailsPage() {
         setProduct(prev => ({ ...prev, emptyCylinderPrice: value }));
     };
 
+    const createProduct = useCreateProduct()
+    const updateProduct = useUpdateProduct()
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSavingProduct(true);
 
         try {
-            // Validamos que los precios sean >= 0
             if (product.basePrice < 0 || product.emptyCylinderPrice < 0) {
                 alert('Por favor ingrese valores de precio válidos (>= 0).');
                 setIsSavingProduct(false);
@@ -95,9 +94,9 @@ export function ProductDetailsPage() {
             };
 
             if (isNew) {
-                await createProduct(payload);
+                await createProduct.mutateAsync(payload);
             } else {
-                await updateProduct({ id: id!, ...payload });
+                await updateProduct.mutateAsync({ id: id!, ...payload });
             }
 
             navigate(-1);
@@ -136,7 +135,6 @@ export function ProductDetailsPage() {
                             />
                         </div>
 
-                        {/* Precios */}
                         <div className="grid gap-4">
                             <div>
                                 <Label>Precio Base (S/)</Label>
@@ -170,7 +168,6 @@ export function ProductDetailsPage() {
                         {
                             user?.role !== 'MEMBER' && (
                                 <>
-                                    {/* Negociaciones */}
                                     <div className="space-y-4">
                                         <div>
                                             <Label>Permitir negociación de precio</Label>
@@ -219,7 +216,6 @@ export function ProductDetailsPage() {
                                         </div>
                                     </div>
 
-                                    {/* Botones */}
                                     <div className="flex gap-2 mt-6">
                                         <Button
                                             disabled={isSavingProduct}
