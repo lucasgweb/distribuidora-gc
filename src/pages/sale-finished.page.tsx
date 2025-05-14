@@ -154,7 +154,7 @@ export function SaleFinished() {
 
     return (
         <div className="flex flex-col min-h-screen ">
-            <div className="max-w-md mx-auto w-full flex-1 pb-24 space-y-4 px-4">
+            <div className=" mx-auto w-full flex-1 pb-24 space-y-4 px-4">
                 {/* Header con back y share */}
                 <Header
                     title="Comprobante de venta"
