@@ -157,7 +157,7 @@ export function InventoryListPage() {
                         </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="gap-3 grid grid-cols-1">
                         {isLoading ? (
                             // Mostrar skeletons durante o carregamento inicial
                             renderSkeletons()

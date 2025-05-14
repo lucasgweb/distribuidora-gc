@@ -94,7 +94,7 @@ export function UsersListPage() {
                         </div>
                     </div>
 
-                    <div className="mt-4 space-y-3">
+                    <div className="mt-4 gap-3 grid grid-cols-1 md:grid-cols-2">
                         {filteredUsers.map(user => (
                             <Card
                                 key={user.id}

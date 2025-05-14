@@ -105,7 +105,7 @@ export function ClientListPage() {
                         </Button>
                     </div>
 
-                    <div className="mt-4 space-y-3">
+                    <div className="mt-4 gap-3 grid grid-cols-1 md:grid-cols-2 mb-20">
                         {/* Mostrar skeletons durante o carregamento inicial */}
                         {isLoading ? renderClientSkeletons() : null}
 

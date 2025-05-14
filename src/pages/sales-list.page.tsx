@@ -162,7 +162,7 @@ export function SalesListPage() {
                         </div>
                     </div>
 
-                    <div className="mt-4 space-y-3">
+                    <div className="mt-4 space-y-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                         {/* Exibir mensagem de erro */}
                         {isError && (
                             <div className="bg-red-50 text-red-700 p-4 rounded-lg border border-red-200">
