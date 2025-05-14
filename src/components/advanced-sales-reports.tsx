@@ -7,6 +7,7 @@ import { DateRangePicker } from './date-range-picker'
 import { Card, CardContent } from './ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { formatCurrency } from '../utils/format-currency'
 import { ClientDTO } from '../dtos/client.dto'
 import { UserDTO } from '../dtos/user.dto'
@@ -15,7 +16,7 @@ import { SaleReportDTO, SalesReportFilterDTO } from '../dtos/sale-report.dto'
 import { Skeleton } from './ui/skeleton'
 import { useAuth } from '../hooks/use-auth.hook'
 import { useMediaQuery } from 'usehooks-ts'
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './ui/accordion'
+import { BarChart3, Users } from 'lucide-react'
 
 interface AdvancedSalesReportsProps {
     clients: ClientDTO[]
@@ -42,6 +43,7 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
     const [salesData, setSalesData] = useState<SaleReportDTO[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string>()
+    const [activeTab, setActiveTab] = useState("daily")
 
     const chartData = useMemo(() => {
         if (!dateRange.from || !dateRange.to) return []
@@ -223,76 +225,81 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
                 <StatCard title="Valor Promedio" value={formatCurrency(averageTicket)} loading={isLoading} />
             </div>
 
-            <Accordion type="multiple" className="space-y-2">
-                <AccordionItem value="daily-sales">
-                    <AccordionTrigger className='text-bold text-md'>Ventas Diarias</AccordionTrigger>
-                    <AccordionContent>
-                        <Card>
-                            <CardContent>
-                                {isLoading ? (
-                                    <Skeleton className="h-64 w-full" />
-                                ) : isMobile ? (
-                                    <DailySalesTable />
-                                ) : (
-                                    <div className="h-64">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={chartData}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="dayOfMonth" tick={{ fontSize: 12 }} interval={0} />
-                                                <YAxis width={80} tickFormatter={value => `S/${value}`} tick={{ fontSize: 12 }} />
-                                                <Tooltip content={({ payload, label }) => <CustomTooltip payload={payload} label={`Día ${label}`} />} />
-                                                <Line type="monotone" dataKey="total" strokeWidth={2} dot={{ r: 4 }} />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </AccordionContent>
-                </AccordionItem>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 gap-2">
+                    <TabsTrigger value="daily" className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        <span>Ventas Diarias</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="byUser" className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        <span>Ventas por Vendedor</span>
+                    </TabsTrigger>
+                </TabsList>
 
-                <AccordionItem value="sales-by-user">
-                    <AccordionTrigger className='text-bold text-md'>Ventas por Vendedor</AccordionTrigger>
-                    <AccordionContent>
-                        <Card>
-                            <CardContent>
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Vendedor</TableHead>
-                                                <TableHead className="text-right">Ventas</TableHead>
-                                                <TableHead className="text-right">Total</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {isLoading ? (
-                                                Array(3)
-                                                    .fill(0)
-                                                    .map((_, i) => (
-                                                        <TableRow key={i}>
-                                                            <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                                                            <TableCell><Skeleton className="h-6 w-20 ml-auto" /></TableCell>
-                                                            <TableCell><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
-                                                        </TableRow>
-                                                    ))
-                                            ) : (
-                                                salesByUser.map(user => (
-                                                    <TableRow key={user.userId}>
-                                                        <TableCell>{user.userName}</TableCell>
-                                                        <TableCell className="text-right">{user.quantity}</TableCell>
-                                                        <TableCell className="text-right">{formatCurrency(user.totalAmount)}</TableCell>
+                <TabsContent value="daily" className="mt-4">
+                    <Card>
+                        <CardContent className="pt-6">
+                            {isLoading ? (
+                                <Skeleton className="h-64 w-full" />
+                            ) : isMobile ? (
+                                <DailySalesTable />
+                            ) : (
+                                <div className="h-64">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={chartData}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="formattedDate" tick={{ fontSize: 12 }} interval={0} />
+                                            <YAxis width={80} tickFormatter={value => `S/${value}`} tick={{ fontSize: 12 }} />
+                                            <Tooltip content={({ payload, label }) => <CustomTooltip payload={payload} label={label} />} />
+                                            <Line type="monotone" dataKey="total" strokeWidth={2} dot={{ r: 4 }} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="byUser" className="mt-4">
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Vendedor</TableHead>
+                                            <TableHead className="text-right">Ventas</TableHead>
+                                            <TableHead className="text-right">Total</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {isLoading ? (
+                                            Array(3)
+                                                .fill(0)
+                                                .map((_, i) => (
+                                                    <TableRow key={i}>
+                                                        <TableCell><Skeleton className="h-6 w-32" /></TableCell>
+                                                        <TableCell><Skeleton className="h-6 w-20 ml-auto" /></TableCell>
+                                                        <TableCell><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
                                                     </TableRow>
                                                 ))
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+                                        ) : (
+                                            salesByUser.map(user => (
+                                                <TableRow key={user.userId}>
+                                                    <TableCell>{user.userName}</TableCell>
+                                                    <TableCell className="text-right">{user.quantity}</TableCell>
+                                                    <TableCell className="text-right">{formatCurrency(user.totalAmount)}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }
