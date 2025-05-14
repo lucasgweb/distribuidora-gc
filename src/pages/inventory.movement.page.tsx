@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { api } from "../lib/api";
 import { Textarea } from "../components/ui/textarea";
 import { ProductDTO } from "../dtos/product.dto";
+import { useCreateInventoryMovement } from "../queries/inventory";
 
 export function InventoryMovementPage() {
     const navigate = useNavigate();
@@ -80,6 +81,8 @@ export function InventoryMovementPage() {
         fetchProducts();
     }, [location.search, selectedProductId]);
 
+    const createInventory = useCreateInventoryMovement()
+
     const handleSubmit = async () => {
         if (!selectedProductId) {
             toast.info("Debes seleccionar un producto");
@@ -94,10 +97,10 @@ export function InventoryMovementPage() {
         setIsLoading(true);
 
         try {
-            await api.post('/inventory-movements', {
+            await createInventory.mutateAsync({
                 productId: selectedProductId,
                 movementType,
-                cylinderType, 
+                cylinderType,
                 quantity: parseInt(quantity),
                 notes: notes.trim() || undefined,
             });
@@ -192,7 +195,12 @@ export function InventoryMovementPage() {
                             type="number"
                             placeholder="0"
                             value={quantity}
-                            onChange={e => setQuantity(e.target.value)}
+                            onChange={e => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) {
+                                    setQuantity(value);
+                                }
+                            }}
                             disabled={isLoading}
                         />
                     </div>
