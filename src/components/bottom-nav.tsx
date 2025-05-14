@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 export function BottomNav() {
     const location = useLocation();
     const currentRoute = location.pathname;
-
     const navigate = useNavigate();
 
     const navItems = [
@@ -16,7 +15,7 @@ export function BottomNav() {
     ];
 
     return (
-        <nav className="fixed bottom-0 w-full bg-white border-t md:hidden pb-2">
+        <nav className="fixed bottom-0 w-full bg-white border-t lg:hidden pb-2">
             <div className="grid grid-cols-5 gap-1 p-2">
                 {navItems.map((item, index) => {
                     if (item.type === "action") {
@@ -24,9 +23,9 @@ export function BottomNav() {
                             <button
                                 onClick={() => navigate('/register-menu')}
                                 key={index}
-                                className="bg-primary m-auto text-white p-2 rounded-full justify-center items-center align-middle flex h-13 w-13 shadow-lg hover:bg-primary/90 transition-colors"
+                                className="bg-primary m-auto text-white p-2 md:p-3 rounded-full justify-center items-center align-middle flex h-13 w-13 md:h-16 md:w-16 shadow-lg hover:bg-primary/90 transition-colors"
                             >
-                                <Plus className="w-6 h-6" />
+                                <Plus className="w-6 h-6 md:w-8 md:h-8" />
                             </button>
                         );
                     }
@@ -37,11 +36,11 @@ export function BottomNav() {
                         <button
                             onClick={() => navigate(item.route)}
                             key={index}
-                            className={`flex flex-col items-center justify-center p-2 ${isActive ? "text-primary" : "text-gray-500"
+                            className={`flex flex-col items-center justify-center p-1 md:p-2 ${isActive ? "text-primary" : "text-gray-500"
                                 }`}
                         >
-                            <item.icon className="w-5 h-5" />
-                            <span className="text-xs mt-1">{item.label}</span>
+                            <item.icon className="w-5 h-5 md:w-7 md:h-7" />
+                            <span className="text-xs md:text-sm mt-1">{item.label}</span>
                         </button>
                     );
                 })}

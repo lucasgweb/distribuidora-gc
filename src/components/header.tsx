@@ -1,28 +1,65 @@
-import { ArrowLeft, Menu, Package, User, UserPlus, Users, X } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet"
-import { Link } from "react-router-dom"
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+    ArrowLeft,
+    Menu,
+    Package,
+    User,
+    UserPlus,
+    Users,
+    X,
+    Home,
+    NotepadText,
+    Plus,
+    PieChart,
+} from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./ui/sheet";
+import { Link } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
-import { useAuth } from "../hooks/use-auth.hook"
-import DefaultAvatar from './../assets/default-avatar.svg'
+import { useAuth } from "../hooks/use-auth.hook";
+import DefaultAvatar from "../assets/default-avatar.svg";
 
 type Props = {
-    title: string
-    onBack?: () => void
-    closeIcon?: boolean
-    showMenu?: boolean        // Permite mostrar el menú cuando hay onBack
-    hideAvatar?: boolean      // Permite ocultar el avatar
-}
+    title: string;
+    onBack?: () => void;
+    closeIcon?: boolean;
+    showMenu?: boolean; // Permite mostrar el menú cuando hay onBack
+    hideAvatar?: boolean; // Permite ocultar el avatar
+};
 
 export function Header({
     title,
     onBack,
     closeIcon,
     showMenu = false,
-    hideAvatar = false
+    hideAvatar = false,
 }: Props) {
-
     const { user } = useAuth();
+
+    const navItems = [
+        { route: "/", icon: Home, label: "Inicio" },
+        { route: "/sales-list", icon: NotepadText, label: "Ventas" },
+        { route: "/clients", icon: User, label: "Clientes" },
+        { route: "/reports", icon: PieChart, label: "Reportes" },
+
+        user?.role !== "MEMBER" && {
+            route: "/users",
+            icon: Users,
+            label: "Usuarios",
+        },
+        { route: "/products", icon: Package, label: "Productos" },
+        { route: "/inventory-movement-list", icon: Package, label: "Inventario" },
+        user?.role !== "MEMBER" && {
+            route: "/generate-invite",
+            icon: UserPlus,
+            label: "Generar invitación",
+        },
+    ].filter(Boolean) as Array<{
+        route: string;
+        icon: React.ComponentType<any>;
+        label: string;
+        type?: "action";
+    }>;
 
     const renderMenuButton = () => (
         <Sheet>
@@ -45,51 +82,26 @@ export function Header({
                     </div>
 
                     <nav className="flex flex-col gap-2">
-                        <Link
-                            to="/clients"
-                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
-                        >
-                            <span><User /></span>
-                            Clientes
-                        </Link>
-
-                        {
-                            user?.role !== 'MEMBER' && (
+                        {navItems.map((item, idx) =>
+                            item.type === "action" ? (
+                                <button
+                                    key={idx}
+                                    onClick={() => window.location.assign(item.route)}
+                                    className="bg-primary text-white p-3 rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition"
+                                >
+                                    <Plus className="w-6 h-6" />
+                                </button>
+                            ) : (
                                 <Link
-                                    to="/users"
+                                    key={idx}
+                                    to={item.route}
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
                                 >
-                                    <span><Users /></span>
-                                    Usuarios
+                                    <item.icon className="w-5 h-5" />
+                                    <span>{item.label}</span>
                                 </Link>
                             )
-                        }
-                        <Link
-                            to="/products"
-                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
-                        >
-                            <span><Package /></span>
-                            Productos
-                        </Link>
-                        <Link
-                            to="/inventory-movement-list"
-                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
-                        >
-                            <span><Package /></span>
-                            Inventario
-                        </Link>
-
-
-                        {
-                            user?.role !== 'MEMBER' && (
-                                <Link
-                                    to="/generate-invite"
-                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 hover:bg-gray-100"
-                                >
-                                    <span><UserPlus className="w-5 h-5" /></span>
-                                    Generar invitación
-                                </Link>
-                            )}
+                        )}
                     </nav>
                 </div>
             </SheetContent>
@@ -98,7 +110,6 @@ export function Header({
 
     const renderAvatar = () => {
         if (hideAvatar) return null;
-
         return (
             <Link
                 to="/profile"
@@ -118,12 +129,10 @@ export function Header({
         );
     };
 
-    // Este es el nuevo enfoque: siempre usamos una estructura de tres columnas
-    // para asegurar que el título permanezca centrado
     return (
         <div className="flex items-center justify-between w-full py-2 bg-white">
             <div className="grid grid-cols-3 w-full items-center">
-                {/* Columna izquierda: Botón de regreso o menú */}
+                {/* Coluna esquerda: Botão de regreso ou menu */}
                 <div className="flex justify-start">
                     {onBack ? (
                         <button
@@ -140,27 +149,21 @@ export function Header({
                     ) : (
                         showMenu && renderMenuButton()
                     )}
-
-                    {/* Mostrar menú junto con botón de regreso si se especifica */}
                     {onBack && showMenu && (
-                        <div className="ml-2">
-                            {renderMenuButton()}
-                        </div>
+                        <div className="ml-2">{renderMenuButton()}</div>
                     )}
                 </div>
 
-                {/* Columna central: Título siempre centrado */}
+                {/* Coluna central: Título sempre centrado */}
                 <div className="flex justify-center">
-                    <h1 className="text-lg font-semibold text-center text-nowrap">
+                    <h1 className="text-lg font-semibold text-center truncate">
                         {title}
                     </h1>
                 </div>
 
-                {/* Columna derecha: Avatar o espacio vacío */}
-                <div className="flex justify-end">
-                    {renderAvatar()}
-                </div>
+                {/* Coluna direita: Avatar ou espaço vazio */}
+                <div className="flex justify-end">{renderAvatar()}</div>
             </div>
         </div>
-    )
+    );
 }
