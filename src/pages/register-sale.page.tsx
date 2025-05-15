@@ -11,12 +11,13 @@ import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
 import { ClientDTO } from '../dtos/client.dto';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import QRCode from 'react-qr-code';
+import { QRCodeSVG } from 'qrcode.react';
 import {
     X, Plus, ArrowUpCircle, ArrowDownCircle, Loader2,
     CheckCircle, Search, CheckIcon, Info, ShoppingCart,
     Trash2, Coins, User
 } from 'lucide-react';
+import YapeLogo from '../assets/yape-logo.png'
 import { ProductDTO } from '../dtos/product.dto';
 import { toast } from 'sonner';
 import { MoneyInput } from '../components/ui/money-input';
@@ -73,6 +74,8 @@ interface OrderItem {
 
 export function RegisterSalePage() {
     const navigate = useNavigate();
+
+    const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
 
     // Clientes
     const [searchQuery, setSearchQuery] = useState('');
@@ -343,6 +346,81 @@ export function RegisterSalePage() {
         }
     };
 
+    const YapeQRMiniature = ({ onClick }: { onClick: any }) => (
+        <div className="flex items-center gap-3 bg-primary/10 p-3 rounded-lg mt-2 cursor-pointer" onClick={onClick}>
+            <div className="bg-white p-2 rounded-lg">
+                <QRCodeSVG
+                    value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212"
+                    size={60}
+                    level="H"
+                    fgColor="#7b1fa2"
+                />
+            </div>
+            <div className="flex-1">
+                <div className="font-medium text-sm">Pago con Yape</div>
+                <div className="text-xs text-gray-500">Haz clic para ver el código QR completo</div>
+            </div>
+        </div>
+    );
+
+    const YapeQRCode = ({ value }: { value: string }) => {
+        return (
+            <div className="flex flex-col items-center justify-center bg-[#7b1fa2] p-6 rounded-lg">
+                {/* Logo superior */}
+                <div className="mb-3">
+                    <img
+                        src={YapeLogo}
+                        alt="Yape"
+                        className="w-24 h-auto"
+                    />
+                </div>
+
+                {/* Contenedor del QR */}
+                <div className="bg-white p-4 rounded-3xl w-[280px] h-[280px] flex items-center justify-center relative">
+                    <QRCodeSVG
+                        value={value}
+                        size={250}
+                        level="H"
+                        fgColor="#7b1fa2"
+                        bgColor="white"
+                        includeMargin={false}
+                    />
+
+                    {/* Logo superpuesto con borde morado */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div style={{
+                            position: 'relative',
+                            filter: 'drop-shadow(0  5px #7b1fa2)'
+                        }}>
+                            <img
+                                src={YapeLogo}
+                                alt="Yape"
+                                className="w-24 h-24"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Botón "Paga aquí con Yape" */}
+                <div className="mt-3 bg-[#00bfa5] text-white px-8 py-2 rounded-full text-lg font-medium">
+                    Paga aquí con Yape
+                </div>
+
+                {/* Nombre del cliente */}
+                <div className="mt-4 text-white text-lg font-medium">
+                    Luis Eduardo Costilla Pantoja
+                </div>
+
+                {/* Botón para cerrar */}
+                <Button
+                    className="mt-4 bg-white text-[#7b1fa2] hover:bg-gray-100"
+                    onClick={() => setIsQRDialogOpen(false)}
+                >
+                    Cerrar
+                </Button>
+            </div>
+        );
+    };
     // Verificar se está carregando produtos
     const isLoading = isLoadingProducts;
 
@@ -769,14 +847,13 @@ export function RegisterSalePage() {
                     </div>
                 </DialogContent>
             </Dialog>
-
             <Dialog open={isConfirmationDialogOpen} onOpenChange={setIsConfirmationDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Confirmar venta</DialogTitle>
                     </DialogHeader>
 
-                    <div className="space-y-2 py-2">
+                    <div className="space-y-3 py-2">
                         <div className="flex flex-col space-y-2">
                             <div className="flex justify-between">
                                 <span className="font-medium">Cliente:</span>
@@ -796,21 +873,9 @@ export function RegisterSalePage() {
                             </div>
                         </div>
 
-                        {/* Add QR code for YAPE payments */}
+                        {/* Miniatura de QR para YAPE */}
                         {selectedPayment === 'YAPE' && (
-                            <div className="flex flex-col items-center justify-center p-4 bg-white border rounded-md">
-                                <div className="text-sm font-medium text-center mb-3">
-                                    Escanea este código QR para pagar con Yape
-                                </div>
-                                <QRCode
-                                    value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212"
-                                    size={180}
-                                    level="H"
-                                />
-                                <div className="text-xs text-center mt-3 text-gray-500">
-                                    El pago se registrará automáticamente
-                                </div>
-                            </div>
+                            <YapeQRMiniature onClick={() => setIsQRDialogOpen(true)} />
                         )}
 
                         <div className="bg-amber-50 p-3 rounded-md border border-amber-200 text-amber-800 text-xs">
@@ -840,6 +905,14 @@ export function RegisterSalePage() {
                             )}
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
+                <DialogContent className="sm:max-w-md p-0 bg-transparent border-none shadow-none">
+                    <YapeQRCode
+                        value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212"
+                    />
                 </DialogContent>
             </Dialog>
         </div>
