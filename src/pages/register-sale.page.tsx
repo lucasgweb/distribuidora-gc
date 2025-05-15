@@ -402,7 +402,7 @@ export function RegisterSalePage() {
                 </div>
 
                 {/* Botón "Paga aquí con Yape" */}
-                <div className="mt-3 bg-[#00bfa5] text-white px-8 py-2 rounded-full text-lg font-medium">
+                <div className="-mt-3 z-10 bg-[#00bfa5] text-white px-8  rounded-full text-lg font-medium">
                     Paga aquí con Yape
                 </div>
 
