@@ -197,7 +197,7 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
                         disabled={isMember}
                     >
                         <SelectTrigger className="h-12 w-full">
-                            <SelectValue placeholder="Seleccionar vendedor" />
+                            <SelectValue placeholder="Seleccionar Chofer" />
                         </SelectTrigger>
                         <SelectContent>
                             {!isMember && <SelectItem value="all">Todos</SelectItem>}
@@ -233,7 +233,7 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
                     </TabsTrigger>
                     <TabsTrigger value="byUser" className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
-                        <span>Ventas por Vendedor</span>
+                        <span>Ventas por Chofer</span>
                     </TabsTrigger>
                 </TabsList>
 
@@ -268,7 +268,7 @@ export function AdvancedSalesReports({ clients, sellers }: AdvancedSalesReportsP
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Vendedor</TableHead>
+                                            <TableHead>Chofer</TableHead>
                                             <TableHead className="text-right">Ventas</TableHead>
                                             <TableHead className="text-right">Total</TableHead>
                                         </TableRow>

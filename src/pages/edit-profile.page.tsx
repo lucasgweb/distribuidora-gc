@@ -141,7 +141,7 @@ export function EditProfilePage() {
                             <Label>Rol del usuario</Label>
                             {isEditingSelf ? (
                                 <Input
-                                    value={formData.role === 'ADMIN' ? 'Administrador' : 'Miembro'}
+                                    value={formData.role === 'ADMIN' ? 'Administrador' : 'Chofer'}
                                     disabled
                                     className="w-[180px] bg-gray-100 text-gray-600 cursor-not-allowed"
                                 />
@@ -155,7 +155,7 @@ export function EditProfilePage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="ADMIN">Administrador</SelectItem>
-                                        <SelectItem value="MEMBER">Miembro</SelectItem>
+                                        <SelectItem value="MEMBER">Chofer</SelectItem>
                                     </SelectContent>
                                 </Select>
                             )}

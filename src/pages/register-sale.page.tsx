@@ -11,6 +11,7 @@ import SmartPhoneSVG from '../assets/smartphone.svg';
 import { ClientSearch } from '../components/client-search';
 import { ClientDTO } from '../dtos/client.dto';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import QRCode from 'react-qr-code';
 import {
     X, Plus, ArrowUpCircle, ArrowDownCircle, Loader2,
     CheckCircle, Search, CheckIcon, Info, ShoppingCart,
@@ -25,7 +26,6 @@ import {
 } from '../components/ui/dialog';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { cn } from '../lib/utils';
-import { Badge } from '../components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { Separator } from '../components/ui/separator';
 
@@ -458,11 +458,11 @@ export function RegisterSalePage() {
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                     <ShoppingCart className="h-5 w-5 text-primary" />
-                                    <h2 className="font-medium text-lg">Ítems ({orderItems.length})</h2>
+                                    <h2 className="font-medium text-lg">Balones ({orderItems.length})</h2>
                                 </div>
                                 <Button size="sm" variant="default" onClick={openAddItemDialog}>
                                     <Plus className="w-4 h-4 mr-2" />
-                                    Agregar ítem
+                                    Agregar balón
                                 </Button>
                             </div>
 
@@ -477,7 +477,7 @@ export function RegisterSalePage() {
                                             onClick={openAddItemDialog}
                                         >
                                             <Plus className="w-4 h-4 mr-2" />
-                                            Agregar el primer ítem
+                                            Agregar el primer balón
                                         </Button>
                                     </div>
                                 </div>
@@ -519,12 +519,12 @@ export function RegisterSalePage() {
                                                                     <span>{oi.returned}</span>
                                                                 </div>
                                                             </TooltipTrigger>
-                                                            <TooltipContent>
+                                                            {/*  <TooltipContent>
                                                                 <p>Devueltos: {oi.returned} unidades</p>
                                                                 <p className="text-xs text-gray-500">
                                                                     {formatCurrency(oi.negotiatedCylinderPrice ?? oi.item.emptyCylinderPrice)} c/u
                                                                 </p>
-                                                            </TooltipContent>
+                                                            </TooltipContent> */}
                                                         </Tooltip>
                                                     </TooltipProvider>
                                                 </div>
@@ -580,10 +580,10 @@ export function RegisterSalePage() {
 
             {/* Dialog para agregar/editar artículo */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md max-h-[90vh]">
                     <DialogHeader>
                         <DialogTitle>
-                            {editingItemIndex !== null ? 'Editar ítem' : 'Agregar ítem'}
+                            {editingItemIndex !== null ? 'Editar balón' : 'Agregar balón'}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -633,15 +633,13 @@ export function RegisterSalePage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4">
                                         <div>
                                             <div className="flex items-center justify-between">
                                                 <Label className={cn(!prod.allowPriceNegotiation && "text-gray-500")}>
                                                     Precio unitario (S/)
                                                 </Label>
-                                                {!prod.allowPriceNegotiation && (
-                                                    <Badge variant="outline" className="text-xs">Fijo</Badge>
-                                                )}
+
                                             </div>
                                             <MoneyInput
                                                 value={tempItem.negotiatedPrice ?? prod.basePrice}
@@ -649,7 +647,7 @@ export function RegisterSalePage() {
                                                 disabled={!prod.allowPriceNegotiation}
                                             />
                                         </div>
-                                        <div>
+                                        {/*  <div>
                                             <div className="flex items-center justify-between">
                                                 <Label className={cn(!prod.allowCylinderNegotiation && "text-gray-500")}>
                                                     Precio balón (S/)
@@ -663,7 +661,7 @@ export function RegisterSalePage() {
                                                 onValueChange={(v: number) => handleMoneyChange(v, 'negotiatedCylinderPrice')}
                                                 disabled={!prod.allowCylinderNegotiation}
                                             />
-                                        </div>
+                                        </div> */}
                                     </div>
 
                                     <div className="bg-gray-50 p-3 rounded-md space-y-1 border">
@@ -772,14 +770,13 @@ export function RegisterSalePage() {
                 </DialogContent>
             </Dialog>
 
-            {/* Dialog de confirmación de venta */}
             <Dialog open={isConfirmationDialogOpen} onOpenChange={setIsConfirmationDialogOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Confirmar venta</DialogTitle>
                     </DialogHeader>
 
-                    <div className="space-y-4 py-4">
+                    <div className="space-y-2 py-2">
                         <div className="flex flex-col space-y-2">
                             <div className="flex justify-between">
                                 <span className="font-medium">Cliente:</span>
@@ -790,7 +787,7 @@ export function RegisterSalePage() {
                                 <span>{selectedPayment === 'CASH' ? 'Efectivo' : 'Yape'}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="font-medium">Ítems:</span>
+                                <span className="font-medium">Balones:</span>
                                 <span>{orderItems.length} ({totalItems} unidades)</span>
                             </div>
                             <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
@@ -799,7 +796,24 @@ export function RegisterSalePage() {
                             </div>
                         </div>
 
-                        <div className="bg-amber-50 p-3 rounded-md border border-amber-200 text-amber-800 text-sm">
+                        {/* Add QR code for YAPE payments */}
+                        {selectedPayment === 'YAPE' && (
+                            <div className="flex flex-col items-center justify-center p-4 bg-white border rounded-md">
+                                <div className="text-sm font-medium text-center mb-3">
+                                    Escanea este código QR para pagar con Yape
+                                </div>
+                                <QRCode
+                                    value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212"
+                                    size={180}
+                                    level="H"
+                                />
+                                <div className="text-xs text-center mt-3 text-gray-500">
+                                    El pago se registrará automáticamente
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="bg-amber-50 p-3 rounded-md border border-amber-200 text-amber-800 text-xs">
                             <div className="flex items-start gap-2">
                                 <Info className="h-4 w-4 mt-0.5" />
                                 <div>

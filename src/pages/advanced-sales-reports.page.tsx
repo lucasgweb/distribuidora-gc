@@ -18,7 +18,7 @@ const ClientSearchSkeleton = () => (
     </div>
 )
 
-// Componente skeleton para el selector de vendedor
+// Componente skeleton para el selector de Chofer
 const SellerSelectSkeleton = () => (
     <Skeleton className="h-12 w-full rounded-md" />
 )

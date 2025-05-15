@@ -70,7 +70,7 @@ export function UsersListPage() {
     }, []);
 
     const getRoleLabel = (role: string) => {
-        return role === 'ADMIN' ? 'Administrador' : 'Miembro';
+        return role === 'ADMIN' ? 'Administrador' : 'Chofer';
     };
 
     const formatDate = (date: Date) => {

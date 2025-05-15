@@ -156,7 +156,7 @@ export function Header({
 
                 {/* Coluna central: Título sempre centrado */}
                 <div className="flex justify-center">
-                    <h1 className="text-lg font-semibold text-center truncate">
+                    <h1 className="text-lg font-semibold text-center text-nowrap">
                         {title}
                     </h1>
                 </div>
