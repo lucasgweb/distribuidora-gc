@@ -353,12 +353,11 @@ export function RegisterSalePage() {
                     value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212"
                     size={60}
                     level="H"
-                    fgColor="#7b1fa2"
                 />
             </div>
             <div className="flex-1">
                 <div className="font-medium text-sm">Pago con Yape</div>
-                <div className="text-xs text-gray-500">Haz clic para ver el código QR completo</div>
+                <div className="text-xs text-blue-500">Haz clic para ver el código QR completo</div>
             </div>
         </div>
     );
