@@ -350,8 +350,7 @@ export function RegisterSalePage() {
         <div className="flex items-center gap-3 bg-primary/10 p-3 rounded-lg mt-2 cursor-pointer" onClick={onClick}>
             <div className="bg-white p-2 rounded-lg">
                 <QRCodeSVG
-                    /* value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212" */
-                    value="0002010102113944LVee2kiaVn+G1DsoXXOXGq/1clizlQXVmBpW+WXfXJM=5204561153036045802PE5930MEDINA FIGUEREDO GUSTAVO ENRIQ6004Lima6304D95B"
+                    value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212"
                     size={60}
                     level="H"
                 />
@@ -911,8 +910,7 @@ export function RegisterSalePage() {
             <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
                 <DialogContent className="sm:max-w-md p-0 bg-transparent border-none shadow-none">
                     <YapeQRCode
-                        /*  value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212" */
-                        value="0002010102113944LVee2kiaVn+G1DsoXXOXGq/1clizlQXVmBpW+WXfXJM=5204561153036045802PE5930MEDINA FIGUEREDO GUSTAVO ENRIQ6004Lima6304D95B"
+                        value="000201010211393237ff5fe33c565bbe8ffad079671850515204561153036045802PE5906YAPERO6004Lima63044212"
                     />
                 </DialogContent>
             </Dialog>
